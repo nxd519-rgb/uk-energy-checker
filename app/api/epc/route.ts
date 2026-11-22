@@ -64,10 +64,34 @@ export async function GET(req: NextRequest) {
       if (!c) return NextResponse.json({ error: "Certificate not found." }, { status: 404 });
       return NextResponse.json({
         property: {
-          totalFloorArea: parseFloat(pick(c, "total-floor-area", "total_floor_area")) || 0,
-          currentEnergyRating: pick(c, "current-energy-rating", "current_energy_band", "energy_band").toUpperCase().slice(0, 1),
-          mainheatDescription: pick(c, "mainheat-description", "main_heating_description", "mainheat_description"),
-          wallsDescription: pick(c, "walls-description", "walls_description", "wall_description"),
+          totalFloorArea:
+            parseFloat(pick(c, "totalFloorArea", "total-floor-area", "total_floor_area", "floorArea")) || 0,
+          currentEnergyRating: pick(
+            c,
+            "currentEnergyEfficiencyBand",
+            "currentEnergyRating",
+            "current-energy-rating",
+            "current_energy_band",
+            "energy_band"
+          )
+            .toUpperCase()
+            .slice(0, 1),
+          mainheatDescription: pick(
+            c,
+            "mainheatDescription",
+            "mainHeatingDescription",
+            "mainheat-description",
+            "main_heating_description",
+            "mainheat_description"
+          ),
+          wallsDescription: pick(
+            c,
+            "wallsDescription",
+            "wallDescription",
+            "walls-description",
+            "walls_description",
+            "wall_description"
+          ),
         },
       });
     }
@@ -81,13 +105,27 @@ export async function GET(req: NextRequest) {
     const seen = new Set<string>();
     const addresses = list
       .map((r) => {
-        const id = pick(r, "certificate_number", "certificateNumber", "lmk-key", "lmk_key");
+        const id = pick(r, "certificateNumber", "certificate_number", "lmk-key", "lmk_key");
         const address =
           pick(r, "address") ||
-          [pick(r, "address1", "address-1"), pick(r, "address2", "address-2"), pick(r, "address3", "address-3")]
+          [
+            pick(r, "addressLine1", "address1", "address-1"),
+            pick(r, "addressLine2", "address2", "address-2"),
+            pick(r, "addressLine3", "address3", "address-3"),
+          ]
             .filter(Boolean)
             .join(", ");
-        return { id, address, rating: pick(r, "current-energy-rating", "current_energy_band", "energy_band").toUpperCase() };
+        const rating = pick(
+          r,
+          "currentEnergyEfficiencyBand",
+          "currentEnergyRating",
+          "current-energy-rating",
+          "current_energy_band",
+          "energy_band"
+        )
+          .toUpperCase()
+          .slice(0, 1);
+        return { id, address, rating };
       })
       .filter((a) => a.id && a.address && !seen.has(a.address) && seen.add(a.address))
       .sort((a, b) => a.address.localeCompare(b.address, "en", { numeric: true }));
@@ -97,3 +135,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 502 });
   }
 }
+      
