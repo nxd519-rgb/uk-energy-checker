@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";type ChargerLocation = {
-  id: string;
+import { useEffect, useRef, useState } from "react";
+
+type ChargerLocation = {  id: string;
   name?: string;
   address?: string;
   city?: string;
@@ -82,9 +83,12 @@ export default function EVChargingMap() {
         maxZoom: 19,
       }).addTo(map);
 
+      
       mapInstance.current = map;
       markersLayer.current = L.layerGroup().addTo(map);
-    } setMapReady(true);
+      setMapReady(true);
+    }
+
     initialiseMap();
 
     return () => {
