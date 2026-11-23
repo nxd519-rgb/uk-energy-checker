@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from "react";
+import EVChargingMap from "@/components/EVChargingMap";import { useState } from "react";
 import EVCalculator from "@/components/EVCalculator";
 import { ASSUMPTIONS as A, Result, Role, UpgradeOption } from "@/lib/calc";
 import EVTariffComparison from "@/components/EVTariffComparison";// Paywall off while you build trust. If you turn it on later, the check MUST
