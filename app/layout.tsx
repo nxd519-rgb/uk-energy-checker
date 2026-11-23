@@ -1,14 +1,57 @@
-import "./globals.css";import "leaflet/dist/leaflet.css";import type { Metadata } from "next";
+
+import "./globals.css";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "UK Home Energy, EPC & Grant Savings Calculator",
-  description: "Estimate your energy overpayment and the UK grants you may qualify for.",
+  metadataBase: new URL("https://uk-energy-checker.vercel.app"),
+
+  title: {
+    default: "UK Energy Checker | Free Home Energy Savings Calculators",
+    template: "%s | UK Energy Checker",
+  },
+
+  description:
+    "Free UK energy calculators. Compare heat pump installation costs, EV electricity tariffs, solar panel savings and home EPC improvements.",
+
+  keywords: [
+    "UK energy calculator",
+    "heat pump cost calculator",
+    "heat pump installation UK",
+    "EV tariff comparison",
+    "EV charging cost calculator",
+    "solar panel savings calculator",
+    "EPC energy savings",
+    "UK energy grants",
+  ],
+
+  applicationName: "UK Energy Checker",
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  openGraph: {
+    title: "UK Energy Checker | Reduce Your Energy Costs",
+    description:
+      "Explore free UK calculators for heat pumps, solar panels, EV charging and home energy efficiency.",
+    url: "https://uk-energy-checker.vercel.app",
+    siteName: "UK Energy Checker",
+    locale: "en_GB",
+    type: "website",
+  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en-GB">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">{children}</body>
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+        {children}
+      </body>
     </html>
   );
 }
