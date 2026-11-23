@@ -1,8 +1,9 @@
 
 import "./globals.css";
 import type { Metadata } from "next";
-
-export const metadata: Metadata = {
+verification: {
+  google: "google5cc3eb71e27bf2ca.html",
+},export const metadata: Metadata = {
   metadataBase: new URL("https://uk-energy-checker.vercel.app"),
 
   title: {
