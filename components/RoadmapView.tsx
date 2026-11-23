@@ -19,11 +19,10 @@ const ratingColour: Record<string, string> = {
 };
 
 export default function RoadmapView({
-  address, role, result, stripeLink, affiliateLink, onReset,
+  address, role, result, stripeLink, affiliateLink, onReset, usingBills,
 }: {
-  address: string; role: Role; result: Result; stripeLink: string; affiliateLink: string; onReset: () => void;
-}) {
-  const [unlocked, setUnlocked] = useState(!PAYWALL_ENABLED);
+  address: string; role: Role; result: Result; stripeLink: string; affiliateLink: string; onReset: () => void; usingBills?: boolean;
+}) {  const [unlocked, setUnlocked] = useState(!PAYWALL_ENABLED);
   const isDev = process.env.NODE_ENV !== "production";
 
   return (
@@ -52,8 +51,11 @@ export default function RoadmapView({
           <p className="mt-1 text-[10px] text-emerald-700">Check eligibility</p>
         </div>
       </div>
-
-      {result.usedFallbacks.length > 0 && (
+      {usingBills && (
+        <p role="note" className="mt-4 rounded-lg bg-emerald-50 p-3 text-xs text-emerald-900">
+          These figures use the usage you entered, so they should be closer to your real bills.
+        </p>
+      )}      {result.usedFallbacks.length > 0 && (
         <p role="note" className="mt-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
           We couldn&apos;t read these from your EPC, so we used typical values: {result.usedFallbacks.join(", ")}. Treat the figures below as rougher than usual.
         </p>
