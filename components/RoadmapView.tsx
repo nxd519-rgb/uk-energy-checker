@@ -4,7 +4,7 @@
 import { useState } from "react";
 import EVCalculator from "@/components/EVCalculator";
 import EVTariffComparison from "@/components/EVTariffComparison";
-import EVChargingMap from "@/components/EVChargingMap";
+
 import {
   ASSUMPTIONS as A,
   Result,
