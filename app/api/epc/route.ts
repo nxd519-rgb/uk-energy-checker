@@ -58,10 +58,9 @@ export async function GET(req: NextRequest) {
       if (!/^[A-Za-z0-9-]{5,80}$/.test(certificate)) {
         return NextResponse.json({ error: "Invalid certificate reference." }, { status: 400 });
       }
-      const path = process.env.EPC_CERTIFICATE_PATH || "/api/certificate";
-      let list = await epcFetch(path, { certificateNumber: certificate });
-      if (!list.length) list = await epcFetch(path, { certificate_number: certificate });
-      const c = list[0];
+         const path = process.env.EPC_CERTIFICATE_PATH || "/api/certificate";
+   const list = await epcFetch(path, { certificate_number: certificate });
+   const c = list.at(0);
       if (!c) return NextResponse.json({ error: "Certificate not found." }, { status: 404 });
       return NextResponse.json({
         property: {
