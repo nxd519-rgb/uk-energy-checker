@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { calculate, Property, Result, Role } from "@/lib/calc";
 
 interface Addr { id: string; address: string; rating: string }
@@ -18,6 +18,13 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("unlock") === "1") {
+      setUnlocked(true);
+    }
+  }, []);
 
   async function lookup(e: React.FormEvent) {
     e.preventDefault();
@@ -60,6 +67,37 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
     setStep(1); setAddresses([]); setSelected(null); setResult(null); setError("");
   }
 
+  const actionPlan = result
+    ? [
+        {
+          title: "1. Immediate Tariff Switch (Zero Upfront Cost)",
+          detail: `Switch from a standard variable tariff to a Time-of-Use tariff (e.g. Octopus Agile or Tracker) to cut up to ${gbp(Math.round(result.overpayment * 0.65))}/yr off your ${gbp(result.electricitySpend)} electricity bill by shifting high-load appliances off peak hours (4pm–7pm).`,
+        },
+        {
+          title: result.bus > 0 ? `2. Claim ${gbp(result.bus)} Boiler Upgrade Scheme Grant` : "2. Heat Pump Readiness & Controls Check",
+          detail: result.bus > 0
+            ? `Your property qualifies for up to ${gbp(result.bus)} off an Air Source Heat Pump via an MCS-certified installer, bringing typical net installation costs down to £3,500–£5,500.`
+            : "Optimise your boiler flow temperature to 55°C–60°C and add smart TRVs to save ~8–12% on heating spend immediately.",
+        },
+        {
+          title: result.gbis > 0 ? `3. Apply for ${gbp(result.gbis)} Great British Insulation Grant` : "3. Fabric-First Heat Loss Reduction",
+          detail: result.gbis > 0
+            ? `With an EPC rating of ${result.rating}, check eligibility under GBIS for subsidised loft or cavity wall insulation before upgrading heating.`
+            : `Your EPC ${result.rating} fabric already retains heat well; focus on draught-proofing and hot water cylinder insulation for rapid payback.`,
+        },
+        {
+          title: "4. Solar PV + Home Battery Pairing",
+          detail: `Adding a 4kWp solar array with a 5kWh battery can offset 50–70% of your ${gbp(result.electricitySpend)} electricity spend and earn ~15p/kWh via Smart Export Guarantee (SEG) payments.`,
+        },
+        {
+          title: role === "landlord" ? "5. Landlord EPC Compliance & Tax Deductibility" : "5. Green Mortgage & 0% Finance Options",
+          detail: role === "landlord"
+            ? "Keep invoices for insulation and heating upgrades as allowable expenses against rental income while future-proofing your property for EPC C standards."
+            : "Check if your mortgage lender offers green cashback (£250–£1,000) or preferential rates when improving your EPC rating.",
+        },
+      ]
+    : [];
+
   return (
     <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       {error && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
@@ -68,7 +106,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
         <form onSubmit={lookup} className="space-y-5">
           <div>
             <label htmlFor="pc" className="block text-sm font-medium">Your postcode</label>
-            <input id="pc" value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder="e.g. GU1 3AA" required
+            <input id="pc" value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder="e.g. HG5 0WJ" required
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 uppercase focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
           </div>
           <fieldset>
@@ -133,43 +171,17 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
           </ul>
 
           <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200">
-            <div aria-hidden className="select-none space-y-3 p-5 blur-sm">
-              <h3 className="font-semibold">Step-by-Step Upgrade &amp; Tariff Action Plan</h3>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="mt-0.5 h-6 w-6 shrink-0 rounded-full bg-emerald-200" />
-                  <div className="flex-1 space-y-1">
-                    <div className="h-3 w-2/3 rounded bg-slate-300" />
-                    <div className="h-3 w-full rounded bg-slate-200" />
+            <div aria-hidden={!unlocked} className={`space-y-4 p-5 ${unlocked ? "" : "select-none blur-sm"}`}>
+              <h3 className="font-semibold text-slate-900">Step-by-Step Upgrade &amp; Tariff Action Plan</h3>
+              {actionPlan.map((item, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800">
+                    {idx + 1}
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-slate-600">{item.detail}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="absolute inset-0 flex items-center justify-center bg-white/40 px-4 text-center text-sm font-medium text-slate-800">
-              Your personalised plan is locked
-            </div>
-          </div>
-
-          <div className="mt-5 space-y-3">
-            <a href={stripeLink} className="block w-full rounded-lg bg-emerald-600 px-4 py-3 text-center font-semibold text-white hover:bg-emerald-700">
-              Unlock Full Personalized PDF Roadmap (£4.99)
-            </a>
-            <a href={affiliateLink} target="_blank" rel="noopener noreferrer sponsored" className="block w-full rounded-lg border border-slate-300 px-4 py-3 text-center font-semibold text-slate-800 hover:bg-slate-50">
-              Compare Fixed Heat Pump &amp; Solar Quotes
-            </a>
-          </div>
-
-          <details className="mt-5 text-xs text-slate-500">
-            <summary className="cursor-pointer">How this was calculated</summary>
-            <ul className="mt-2 list-disc space-y-1 pl-5">
-              {result.notes.map((n) => <li key={n}>{n}</li>)}
-              <li>Heating demand = floor area × band intensity (kWh/m²), +15% for uninsulated walls. Fuel inferred from the EPC heating description ({result.fuel}).</li>
-              <li>Overpayment = fabric upgrades + smart time-of-use tariff (15p off-peak) + heat pump (SCOP 3.0) where applicable.</li>
-            </ul>
-          </details>
-          <button onClick={reset} className="mt-4 text-sm text-slate-500 underline">Start again</button>
-        </div>
-      )}
-    </section>
-  );
-}
