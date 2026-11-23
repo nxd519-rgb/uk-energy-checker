@@ -13,7 +13,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
   const [step, setStep] = useState<1 | 2 | 4>(1);
   const [postcode, setPostcode] = useState("");
   const [role, setRole] = useState<Role>("homeowner");
-  const [addresses, setAddresses] = useState<Addr[]>([]);
+  const [addresses, setAddresses] = useState<Array<Addr>>(new Array<Addr>());
   const [selected, setSelected] = useState<Addr | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
     if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("unlock") === "1") {
       setUnlocked(true);
     }
-  }, []);
+  });
 
   async function lookup(e: React.FormEvent) {
     e.preventDefault();
@@ -65,7 +65,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
 
   function reset() {
     setStep(1);
-    setAddresses([]);
+    setAddresses(new Array<Addr>());
     setSelected(null);
     setResult(null);
     setError("");
@@ -103,7 +103,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
               : "Check if your mortgage lender offers green cashback (£250–£1,000) or preferential rates when improving your EPC rating.",
         },
       ]
-    : [];
+    : new Array<{ title: string; detail: string }>();
 
   return (
     <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -125,7 +125,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
           <fieldset>
             <legend className="text-sm font-medium">I am a…</legend>
             <div className="mt-2 grid grid-cols-2 gap-3">
-              {(["homeowner", "landlord"] as Role[]).map((r) => (
+              {(["homeowner", "landlord"] as Role).map((r) => (
                 <label
                   key={r}
                   className={`cursor-pointer rounded-lg border px-4 py-3 text-center text-sm font-medium capitalize ${
@@ -211,4 +211,3 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
           <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200">
             <div aria-hidden={!unlocked} className={`space-y-4 p-5 ${unlocked ? "" : "select-none blur-sm"}`}>
               <h3 className="font-semibold text-slate-900">Step-by-Step Upgrade &amp; Tariff Action Plan</h3>
-              {actionPlan.map((item, idx) => (
