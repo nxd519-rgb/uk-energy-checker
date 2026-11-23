@@ -6,8 +6,8 @@ import EVCalculator from "@/components/EVCalculator";
 import EVTariffComparison from "@/components/EVTariffComparison";
 import EVChargingMap from "@/components/EVChargingMap";
 import { ASSUMPTIONS as A, Result, Role, UpgradeOption } from "@/lib/calc";
-/ Paywall off while you build trust. If you turn it on later, the check MUST
-// happen on the server after payment; a client-side lock can be bypassed.
+// Paywall off while you build trust. If you turn it on later, the check MUST
+// happen on the server after payment; a client-side lock can be bypassed.// happen on the server after payment; a client-side lock can be bypassed.
 const PAYWALL_ENABLED = false;
 
 const gbp = (n: number) => (n < 0 ? "-£" : "£") + Math.abs(Math.round(n)).toLocaleString("en-GB");
