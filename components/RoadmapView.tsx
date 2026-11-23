@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from "react";
+import EVCalculator from "@/components/EVCalculator";import { useState } from "react";
 import { ASSUMPTIONS as A, Result, Role, UpgradeOption } from "@/lib/calc";
 
 // Paywall off while you build trust. If you turn it on later, the check MUST
@@ -116,8 +115,7 @@ export default function RoadmapView({
           </div>
         )}
       </div>
-
-      <div className="mt-5 space-y-2 print:hidden">
+<EVCalculator />      <div className="mt-5 space-y-2 print:hidden">
         {!unlocked ? (
           <>
             <button type="button" onClick={() => { window.location.href = stripeLink; }} className="block w-full rounded-lg bg-emerald-600 px-4 py-3 text-center font-semibold text-white hover:bg-emerald-700">
