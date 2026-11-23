@@ -24,8 +24,12 @@ type ChargerLocation = {  id: string;
 };
 
 
+
 export default function EVChargingMap() {
   const [mapReady, setMapReady] = useState(false);
+
+  const [postcode, setPostcode] = useState("HG5 0AA");
+  const [postcodeLoading, setPostcodeLoading] = useState(false);
 
   const mapElement = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
