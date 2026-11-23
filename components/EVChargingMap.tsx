@@ -22,15 +22,15 @@ import { useEffect, useRef, useState } from "react";type ChargerLocation = {
   }[];
 };
 
+
 export default function EVChargingMap() {
   const [mapReady, setMapReady] = useState(false);
-  const mapElement = useRef<HTMLDivElement>(null);  
-      mapInstance.current = map;
-      markersLayer.current = L.layerGroup().addTo(map);
-      setMapReady(true);
-    }
 
-    initialiseMap();  const [locations, setLocations] = useState<ChargerLocation[]>([]);
+  const mapElement = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<any>(null);
+  const markersLayer = useRef<any>(null);
+
+  const [locations, setLocations] = useState<ChargerLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [lastUpdated, setLastUpdated] = useState("");
