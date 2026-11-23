@@ -79,7 +79,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
           <fieldset>
             <legend className="text-sm font-medium">I am a…</legend>
             <div className="mt-2 grid grid-cols-2 gap-3">
-              {(["homeowner", "landlord"] as Role).map((r) => (
+              {(["homeowner", "landlord"] as Array<Role>).map((r) => (
                 <label key={r} className={`cursor-pointer rounded-lg border px-4 py-3 text-center text-sm font-medium capitalize ${role === r ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"}`}>
                   <input type="radio" name="role" className="sr-only" checked={role === r} onChange={() => setRole(r)} />
                   {r}
