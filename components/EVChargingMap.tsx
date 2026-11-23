@@ -161,8 +161,7 @@ export default function EVChargingMap() {
     return () => {
       cancelled = true;
     };
-  }, [locations]);
-
+  }, [locations, mapReady]);
   const totalStations = locations.length;
 
   return (
