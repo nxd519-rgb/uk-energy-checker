@@ -31,6 +31,8 @@ export default function EVChargingMap() {
   const [postcode, setPostcode] = useState("HG5 0AA");
   const [postcodeLoading, setPostcodeLoading] = useState(false);
 
+const [postcodeError, setPostcodeError] = useState("");
+const [searchedPostcode, setSearchedPostcode] = useState("");
   const mapElement = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markersLayer = useRef<any>(null);
@@ -40,7 +42,141 @@ export default function EVChargingMap() {
   const [error, setError] = useState("");
   const [lastUpdated, setLastUpdated] = useState("");
 
-  async function loadChargers() {
+async function searchPostcode() {
+  const enteredPostcode = postcode.trim();
+
+  if (!enteredPostcode) {
+    setPostcodeError("Please enter a UK postcode.");
+    return;
+  }
+
+  setPostcodeLoading(true);
+  setPostcodeError("");
+
+  try {
+    const response = await fetch(
+      `/api/postcode?postcode=${encodeURIComponent(enteredPostcode)}`
+    );
+
+    const data = await response.json();
+
+    if (
+      !response.ok ||
+      typeof data.latitude !== "number" ||
+      typeof data.longitude !== "number"
+    ) {
+      throw new Error(data.error || "Postcode not found.");
+    }
+
+    if (!mapInstance.current) {
+      throw new Error("The charging map is still loading.");
+    }
+
+    mapInstance.current.setView(
+      [data.latitude, data.longitude],
+      12
+    );
+
+    setSearchedPostcode(data.postcode || enteredPostcode);
+  } catch (err) {
+    setPostcodeError(
+      err instanceof Error
+        ? err.message
+        : "Unable to search this postcode."
+    );
+  } finally {
+    setPostcodeLoading(false);
+  
+async function searchPostcode() {
+  const enteredPostcode = postcode.trim();
+
+  if (!enteredPostcode) {
+    setPostcodeError("Please enter a UK postcode.");
+    return;
+  }
+
+  setPostcodeLoading(true);
+  setPostcodeError("");
+
+  try {
+    const response = await fetch(
+      `/api/postcode?postcode=${encodeURIComponent(enteredPostcode)}`
+    );
+
+    const data = await response.json();
+
+    if (
+      !response.ok ||
+      typeof data.latitude !== "number" ||
+      typeof data.longitude !== "number"
+    ) {
+      throw new Error(data.error || "Postcode not found.");
+    }
+
+    if (!mapInstance.current) {
+      throw new Error("The charging map is still loading.");
+    }
+
+    mapInstance.current.setView(
+      [data.latitude, data.longitude],
+      12
+    );
+
+    setSearchedPostcode(data.postcode || enteredPostcode);
+  } catch (err) {
+    setPostcodeError(
+      err instanceof Error
+        ? err.message
+        : "Unable to search this postcode."
+    );
+  } finally {
+    setPostcodeLoading(false);
+  async function searchPostcode() {
+  const enteredPostcode = postcode.trim();
+
+  if (!enteredPostcode) {
+    setPostcodeError("Please enter a UK postcode.");
+    return;
+  }
+
+  setPostcodeLoading(true);
+  setPostcodeError("");
+
+  try {
+    const response = await fetch(
+      `/api/postcode?postcode=${encodeURIComponent(enteredPostcode)}`
+    );
+
+    const data = await response.json();
+
+    if (
+      !response.ok ||
+      typeof data.latitude !== "number" ||
+      typeof data.longitude !== "number"
+    ) {
+      throw new Error(data.error || "Postcode not found.");
+    }
+
+    if (!mapInstance.current) {
+      throw new Error("The charging map is still loading.");
+    }
+
+    mapInstance.current.setView(
+      [data.latitude, data.longitude],
+      12
+    );
+
+    setSearchedPostcode(data.postcode || enteredPostcode);
+  } catch (err) {
+    setPostcodeError(
+      err instanceof Error
+        ? err.message
+        : "Unable to search this postcode."
+    );
+  } finally {
+    setPostcodeLoading(false);
+  
+    async function loadChargers() {
     setLoading(true);
     setError("");
 
