@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { calculate, Property, Result, Role } from "@/lib/calc";
 
 interface Addr { id: string; address: string; rating: string }
@@ -19,12 +19,6 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [unlocked, setUnlocked] = useState(false);
-const [unlocked, setUnlocked] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("unlock") === "1") {
-      setUnlocked(true);
-    }
-  });
 
   async function lookup(e: React.FormEvent) {
     e.preventDefault();
@@ -71,40 +65,6 @@ const [unlocked, setUnlocked] = useState(false);
     setError("");
   }
 
-  const actionPlan = result
-    ? [
-        {
-          title: "1. Immediate Tariff Switch (Zero Upfront Cost)",
-          detail: `Switch from a standard variable tariff to a Time-of-Use tariff (e.g. Octopus Agile or Tracker) to cut up to ${gbp(Math.round(result.overpayment * 0.65))}/yr off your ${gbp(result.electricitySpend)} electricity bill by shifting high-load appliances off peak hours (4pm–7pm).`,
-        },
-        {
-          title: result.bus > 0 ? `2. Claim ${gbp(result.bus)} Boiler Upgrade Scheme Grant` : "2. Heat Pump Readiness & Controls Check",
-          detail:
-            result.bus > 0
-              ? `Your property qualifies for up to ${gbp(result.bus)} off an Air Source Heat Pump via an MCS-certified installer, bringing typical net installation costs down to £3,500–£5,500.`
-              : "Optimise your boiler flow temperature to 55°C–60°C and add smart TRVs to save ~8–12% on heating spend immediately.",
-        },
-        {
-          title: result.gbis > 0 ? `3. Apply for ${gbp(result.gbis)} Great British Insulation Grant` : "3. Fabric-First Heat Loss Reduction",
-          detail:
-            result.gbis > 0
-              ? `With an EPC rating of ${result.rating}, check eligibility under GBIS for subsidised loft or cavity wall insulation before upgrading heating.`
-              : `Your EPC ${result.rating} fabric already retains heat well; focus on draught-proofing and hot water cylinder insulation for rapid payback.`,
-        },
-        {
-          title: "4. Solar PV + Home Battery Pairing",
-          detail: `Adding a 4kWp solar array with a 5kWh battery can offset 50–70% of your ${gbp(result.electricitySpend)} electricity spend and earn ~15p/kWh via Smart Export Guarantee (SEG) payments.`,
-        },
-        {
-          title: role === "landlord" ? "5. Landlord EPC Compliance & Tax Deductibility" : "5. Green Mortgage & 0% Finance Options",
-          detail:
-            role === "landlord"
-              ? "Keep invoices for insulation and heating upgrades as allowable expenses against rental income while future-proofing your property for EPC C standards."
-              : "Check if your mortgage lender offers green cashback (£250–£1,000) or preferential rates when improving your EPC rating.",
-        },
-      ]
-    : new Array<{ title: string; detail: string }>();
-
   return (
     <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       {error && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
@@ -113,26 +73,71 @@ const [unlocked, setUnlocked] = useState(false);
         <form onSubmit={lookup} className="space-y-5">
           <div>
             <label htmlFor="pc" className="block text-sm font-medium">Your postcode</label>
-            <input
-              id="pc"
-              value={postcode}
-              onChange={(e) => setPostcode(e.target.value)}
-              placeholder="e.g. HG5 0WJ"
-              required
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 uppercase focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-            />
+            <input id="pc" value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder="e.g. HG5 0WJ" required
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 uppercase focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
           </div>
           <fieldset>
             <legend className="text-sm font-medium">I am a…</legend>
             <div className="mt-2 grid grid-cols-2 gap-3">
               {(["homeowner", "landlord"] as Role).map((r) => (
-                <label
-                  key={r}
-                  className={`cursor-pointer rounded-lg border px-4 py-3 text-center text-sm font-medium capitalize ${
-                    role === r ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
-                  }`}
-                >
-                      <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200">
+                <label key={r} className={`cursor-pointer rounded-lg border px-4 py-3 text-center text-sm font-medium capitalize ${role === r ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"}`}>
+                  <input type="radio" name="role" className="sr-only" checked={role === r} onChange={() => setRole(r)} />
+                  {r}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <button disabled={loading} className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700 disabled:opacity-60">
+            {loading ? "Searching…" : "Find my home"}
+          </button>
+        </form>
+      )}
+
+      {step === 2 && (
+        <div>
+          <h2 className="text-lg font-semibold">Select your address</h2>
+          <ul className="mt-3 max-h-96 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
+            {addresses.map((a) => (
+              <li key={a.id}>
+                <button onClick={() => choose(a)} disabled={loading} className="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-slate-50 disabled:opacity-60">
+                  <span>{a.address}</span>
+                  {selected?.id === a.id && loading && <span className="text-xs text-slate-500">Loading…</span>}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button onClick={reset} className="mt-4 text-sm text-slate-500 underline">Change postcode</button>
+        </div>
+      )}
+
+      {step === 4 && result && selected && (
+        <div>
+          <p className="text-sm text-slate-500">{selected.address}</p>
+          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+            <div className="rounded-xl bg-slate-50 p-4">
+              <p className="text-xs uppercase text-slate-500">Current EPC</p>
+              <span className={`mt-2 inline-flex h-12 w-12 items-center justify-center rounded-lg text-2xl font-bold text-white ${ratingColour[result.rating]}`}>{result.rating}</span>
+            </div>
+            <div className="rounded-xl bg-red-50 p-4">
+              <p className="text-xs uppercase text-red-700">Est. yearly overpayment</p>
+              <p className="mt-2 text-2xl font-bold text-red-700">{gbp(result.overpayment)}</p>
+            </div>
+            <div className="rounded-xl bg-emerald-50 p-4">
+              <p className="text-xs uppercase text-emerald-700">Grants available</p>
+              <p className="mt-2 text-2xl font-bold text-emerald-700">{gbp(result.grantTotal)}</p>
+            </div>
+          </div>
+
+          <p className="mt-4 text-sm text-slate-600">
+            Estimated annual energy spend: <strong>{gbp(result.totalSpend)}</strong> ({gbp(result.heatingSpend)} heating, {gbp(result.electricitySpend)} electricity).
+          </p>
+          <ul className="mt-3 space-y-1 text-sm text-slate-700">
+            {result.bus > 0 && <li>✔ Boiler Upgrade Scheme: up to {gbp(result.bus)} towards a heat pump</li>}
+            {result.gbis > 0 && <li>✔ Great British Insulation Scheme: indicative {gbp(result.gbis)} (EPC {result.rating})</li>}
+            {result.eco4Possible && <li>✔ ECO4 may apply if you receive qualifying benefits (not included in total)</li>}
+          </ul>
+
+          <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200">
             <div aria-hidden={!unlocked} className={`space-y-3 p-5 text-sm text-slate-700 ${unlocked ? "" : "select-none blur-sm"}`}>
               <h3 className="font-semibold text-slate-900">Step-by-Step Upgrade &amp; Tariff Action Plan</h3>
               <p><strong>1. Smart Tariff Switch:</strong> Move to a Time-of-Use tariff (e.g. Octopus Agile/Tracker) to save up to {gbp(Math.round(result.overpayment * 0.65))}/yr on electricity.</p>
@@ -167,61 +172,13 @@ const [unlocked, setUnlocked] = useState(false);
               Compare Fixed Heat Pump &amp; Solar Quotes
             </a>
           </div>
-                <button
-                  onClick={() => choose(a)}
-                  disabled={loading}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-slate-50 disabled:opacity-60"
-                >
-                  <span>{a.address}</span>
-                  {selected?.id === a.id && loading && <span className="text-xs text-slate-500">Loading…</span>}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <button onClick={reset} className="mt-4 text-sm text-slate-500 underline">
-            Change postcode
-          </button>
+
+          <div className="mt-4 flex items-center justify-between text-xs text-slate-500 print:hidden">
+            <button onClick={reset} className="underline">Check another postcode</button>
+            <span>Modelled using GOV.UK EPC data &amp; Ofgem baselines</span>
+          </div>
         </div>
       )}
-
-      {step === 4 && result && selected && (
-        <div>
-          <p className="text-sm text-slate-500">{selected.address}</p>
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-xl bg-slate-50 p-4">
-              <p className="text-xs uppercase text-slate-500">Current EPC</p>
-              <span
-                className={`mt-2 inline-flex h-12 w-12 items-center justify-center rounded-lg text-2xl font-bold text-white ${
-                  ratingColour[result.rating]
-                }`}
-              >
-                {result.rating}
-              </span>
-            </div>
-            <div className="rounded-xl bg-red-50 p-4">
-              <p className="text-xs uppercase text-red-700">Est. yearly overpayment</p>
-              <p className="mt-2 text-2xl font-bold text-red-700">{gbp(result.overpayment)}</p>
-            </div>
-            <div className="rounded-xl bg-emerald-50 p-4">
-              <p className="text-xs uppercase text-emerald-700">Grants available</p>
-              <p className="mt-2 text-2xl font-bold text-emerald-700">{gbp(result.grantTotal)}</p>
-            </div>
-          </div>
-
-          <p className="mt-4 text-sm text-slate-600">
-            Estimated annual energy spend: <strong>{gbp(result.totalSpend)}</strong> ({gbp(result.heatingSpend)} heating,{" "}
-            {gbp(result.electricitySpend)} electricity).
-          </p>
-          <ul className="mt-3 space-y-1 text-sm text-slate-700">
-            {result.bus > 0 && <li>✔ Boiler Upgrade Scheme: up to {gbp(result.bus)} towards a heat pump</li>}
-            {result.gbis > 0 && (
-              <li>
-                ✔ Great British Insulation Scheme: indicative {gbp(result.gbis)} (EPC {result.rating})
-              </li>
-            )}
-            {result.eco4Possible && <li>✔ ECO4 may apply if you receive qualifying benefits (not included in total)</li>}
-          </ul>
-
-          <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200">
-            <div aria-hidden={!unlocked} className={`space-y-4 p-5 ${unlocked ? "" : "select-none blur-sm"}`}>
-              <h3 className="font-semibold text-slate-900">Step-by-Step Upgrade &amp; Tariff Action Plan</h3>
+    </section>
+  );
+}
