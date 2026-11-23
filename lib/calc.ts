@@ -45,15 +45,11 @@ export function calculate(prop: Property, role: Role): Result {
   };
   const factor = ratingFactor[rating] || 1.0;
 
-  // Modelled annual baseline spend (UK Ofgem-aligned unit rates)
   const heatingSpend = Math.round(area * 7.2 * factor);
   const electricitySpend = Math.round(580 + area * 1.9);
   const totalSpend = heatingSpend + electricitySpend;
-
-  // Estimated tariff + efficiency overpayment
   const overpayment = Math.round(electricitySpend * 0.19 + heatingSpend * 0.14);
 
-  // UK Grant Eligibility
   const isFossilOrElectric = !/heat pump|district|community/i.test(heatDesc);
   const bus = isFossilOrElectric ? 7500 : 0;
   const isUninsulated = /no insulation|as built|solid brick|stone/i.test(wallDesc);
@@ -61,24 +57,20 @@ export function calculate(prop: Property, role: Role): Result {
   const grantTotal = bus + gbis;
   const eco4Possible = ["D", "E", "F", "G"].includes(rating);
 
-  // 1. Smart Time-of-Use Tariff Optimisation
   const tariffSaving = Math.round(electricitySpend * 0.22);
 
-  // 2. Air Source Heat Pump (sized by floor area)
   const hpGross = Math.round(9200 + area * 28);
   const hpNet = Math.max(1500, hpGross - bus);
   const hpSaving = Math.round(heatingSpend * 0.24 + 95);
   const hpPayback = Number((hpNet / Math.max(1, hpSaving)).toFixed(1));
   const hpTenYear = Math.round(hpSaving * 10 - hpNet);
 
-  // 3. Solar PV (4kWp) + 5kWh Home Battery
   const solarGross = 7400;
   const solarNet = 7400;
-  const solarSaving = Math.round(electricitySpend * 0.52 + 240); // Self-use + SEG export
+  const solarSaving = Math.round(electricitySpend * 0.52 + 240);
   const solarPayback = Number((solarNet / Math.max(1, solarSaving)).toFixed(1));
   const solarTenYear = Math.round(solarSaving * 10 - solarNet);
 
-  // 4. Fabric Insulation (Loft / Cavity / Draught Proofing)
   const insGross = isUninsulated ? Math.round(1400 + area * 12) : 650;
   const insNet = Math.max(0, insGross - gbis);
   const insSaving = Math.round(heatingSpend * (isUninsulated ? 0.18 : 0.08));
@@ -128,7 +120,6 @@ export function calculate(prop: Property, role: Role): Result {
     },
   ];
 
-  // Role-specific adjustment (Landlord EPC C compliance focus)
   if (role === "landlord" && ["D", "E", "F", "G"].includes(rating)) {
     upgrades.sort((a, b) => a.netCost - b.netCost);
   }
