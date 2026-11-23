@@ -65,8 +65,8 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
     setError("");
   }
 
-  const totalAnnualSavings = result ? result.upgrades.reduce((sum, u) => sum + u.annualSaving, 0) : 0;
-  const totalCo2Saved = result ? result.upgrades.reduce((sum, u) => sum + u.co2SavedTonnes, 0).toFixed(1) : "0";
+  const totalSavings = result ? result.upgrades.reduce((s, u) => s + u.annualSaving, 0) : 0;
+  const totalCo2 = result ? result.upgrades.reduce((s, u) => s + u.co2SavedTonnes, 0).toFixed(1) : "0";
 
   return (
     <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -138,49 +138,48 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl bg-slate-50 p-4 text-xs text-slate-700 space-y-1">
+          <div className="mt-4 space-y-1 rounded-xl bg-slate-50 p-4 text-xs text-slate-700">
             <p className="font-semibold text-slate-900">Your EPC Certificate Profile</p>
-            <p><strong>Floor Area:</strong> {result.floorArea} m² &nbsp;|&nbsp; <strong>Est. Annual Energy Bill:</strong> {gbp(result.totalSpend)} ({gbp(result.heatingSpend)} heat / {gbp(result.electricitySpend)} elec)</p>
+            <p><strong>Floor Area:</strong> {result.floorArea} m² | <strong>Est. Annual Bill:</strong> {gbp(result.totalSpend)} ({gbp(result.heatingSpend)} heat / {gbp(result.electricitySpend)} elec)</p>
             <p><strong>Current Heating:</strong> {result.heatingType}</p>
             <p><strong>Wall Construction:</strong> {result.wallType}</p>
           </div>
 
           <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200">
-            <div aria-hidden={!unlocked} className={`p-5 ${unlocked ? "" : "select-none blur-sm"}`}>
+            <div aria-hidden={!unlocked} className={`space-y-3 p-5 ${unlocked ? "" : "select-none blur-sm"}`}>
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-base font-bold text-slate-900">Financial ROI &amp; Upgrade Roadmap</h3>
-                <span className="text-xs font-semibold text-emerald-700">Combined Savings: up to {gbp(totalAnnualSavings)}/yr ({totalCo2Saved}t CO₂/yr)</span>
+                <span className="text-xs font-semibold text-emerald-700">Total Potential: +{gbp(totalSavings)}/yr ({totalCo2}t CO₂/yr)</span>
               </div>
 
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-500">
-                      <th className="py-2 pr-2 font-semibold">Measure</th>
-                      <th className="py-2 px-2 font-semibold">Est. Cost</th>
-                      <th className="py-2 px-2 font-semibold">Grant</th>
-                      <th className="py-2 px-2 font-semibold">Net Cost</th>
-                      <th className="py-2 px-2 font-semibold">Saving/yr</th>
-                      <th className="py-2 px-2 font-semibold">Payback</th>
-                      <th className="py-2 pl-2 font-semibold">10-Yr Net</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-800">
-                    {result.upgrades.map((u, idx) => (
-                      <tr key={idx}>
-                        <td className="py-2.5 pr-2 font-medium">{u.name}</td>
-                        <td className="py-2.5 px-2 text-slate-500">{gbp(u.grossCost)}</td>
-                        <td className="py-2.5 px-2 text-emerald-700">{u.grant > 0 ? `-${gbp(u.grant)}` : "£0"}</td>
-                        <td className="py-2.5 px-2 font-semibold">{gbp(u.netCost)}</td>
-                        <td className="py-2.5 px-2 font-semibold text-emerald-700">+{gbp(u.annualSaving)}</td>
-                        <td className="py-2.5 px-2">{u.paybackYears === 0 ? "Instant" : `${u.paybackYears} yrs`}</td>
-                        <td className={`py-2.5 pl-2 font-semibold ${u.tenYearNetProfit >= 0 ? "text-emerald-700" : "text-slate-600"}`}>
-                          {u.tenYearNetProfit >= 0 ? `+${gbp(u.tenYearNetProfit)}` : gbp(u.tenYearNetProfit)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-2.5">
+                {result.upgrades.map((u, idx) => (
+                  <div key={idx} className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-slate-900">{idx + 1}. {u.name}</span>
+                      <span className="font-bold text-emerald-700">+{gbp(u.annualSaving)}/yr</span>
+                    </div>
+                    <p className="mt-1 text-slate-600">
+                      Est. Cost: {gbp(u.grossCost)} | Grant: {u.grant > 0 ? `-${gbp(u.grant)}` : "£0"} | <strong>Net Cost: {gbp(u.netCost)}</strong> | Payback: <strong>{u.paybackYears === 0 ? "Instant" : `${u.paybackYears} yrs`}</strong> | 10-Yr Net: <strong className="text-emerald-700">{u.tenYearNetProfit >= 0 ? `+${gbp(u.tenYearNetProfit)}` : gbp(u.tenYearNetProfit)}</strong>
+                    </p>
+                  </div>
+                ))}
               </div>
 
-              <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
+              <p className="pt-1 text-xs text-slate-600">
+                <strong>Recommended Order:</strong> Start with Step 1 (Smart Tariff switch) for immediate zero-cost savings, then insulate before sizing a heat pump. Always request 3 MCS-certified quotes so the £7,500 BUS grant is deducted upfront.
+              </p>
+            </div>
+            {!unlocked && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/40 px-4 text-center text-sm font-medium text-slate-800">
+                Your personalised ROI breakdown &amp; PDF roadmap is locked
+              </div>
+            )}
+          </div>
+
+          <div className="mt-5 space-y-3 print:hidden">
+            {!unlocked ? (
+              <>
+                <a href={stripeLink} className="block w-full rounded-lg bg-emerald-600 px-4 py-3 text-center font-semibold text-white hover:bg-emerald-700">
+                  Unlock Full Personalized PDF Roadmap (£4.99)
+                </a>
