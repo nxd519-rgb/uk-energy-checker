@@ -260,8 +260,7 @@ export default function RoadmapView({
           </div>
         )}
       </div>
-
-      {/* Existing EV calculator */}
+<HeatPumpCalculator affiliateLink={affiliateLink} />      {/* Existing EV calculator */}
       <EVCalculator />
 
       {/* Existing EV tariff comparison */}
