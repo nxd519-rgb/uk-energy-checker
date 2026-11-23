@@ -1,7 +1,8 @@
 "use client";
-import EVCalculator from "@/components/EVCalculator";import { useState } from "react";
-import { ASSUMPTIONS as A, Result, Role, UpgradeOption } from "@/lib/calc";
+
+import { useState } from "react";
 import EVCalculator from "@/components/EVCalculator";
+import { ASSUMPTIONS as A, Result, Role, UpgradeOption } from "@/lib/calc";
 import EVTariffComparison from "@/components/EVTariffComparison";// Paywall off while you build trust. If you turn it on later, the check MUST
 // happen on the server after payment; a client-side lock can be bypassed.
 const PAYWALL_ENABLED = false;
