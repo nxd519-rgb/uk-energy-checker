@@ -268,7 +268,8 @@ export default function Page() {
         <p className="mt-4 text-xs text-slate-500">
           © {new Date().getFullYear()} UK Energy Checker
         </p>
-      </footer>
+      </footer> 
+      <EVSavingsCalculator />
     </main>
   );
 }
