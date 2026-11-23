@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 const norm = (k: string) => k.toLowerCase().replace(/[-_\s]/g, "");
 
-/** Top-level lookup (used for the postcode search results). */
 function pick(o: Record<string, unknown>, ...names: string[]): string {
   const map: Record<string, unknown> = {};
   for (const k of Object.keys(o)) map[norm(k)] = o[k];
@@ -15,68 +14,15 @@ function pick(o: Record<string, unknown>, ...names: string[]): string {
   return "";
 }
 
-/** Turns strings, numbers, {description} objects and lists of them into text. */
-function describeValue(v: unknown): string {
-  if (v === null || v === undefined) return "";
-  if (typeof v === "string" || typeof v === "number") return String(v);
-  if (Array.isArray(v)) return v.map(describeValue).filter(Boolean).join("; ");
-  if (typeof v === "object") {
-    const o = v as Record<string, unknown>;
-    for (const k of ["description", "text", "value", "name"]) {
-      if (o[k] !== undefined && o[k] !== null) return describeValue(o[k]);
-    }
-  }
-  return "";
-}
-
-/** Searches the whole response (nested objects and arrays), shallowest match first. */
-function deepPick(root: unknown, names: string[], textOnly = false): string {
-  const wanted = names.map(norm);
-  const queue: unknown[] = [root];
-  for (let i = 0; i < queue.length && i < 5000; i++) {
-    const cur = queue[i];
-    if (Array.isArray(cur)) { queue.push(...cur); continue; }
-    if (!cur || typeof cur !== "object") continue;
-    const o = cur as Record<string, unknown>;
-    const map: Record<string, unknown> = {};
-    for (const k of Object.keys(o)) map[norm(k)] = o[k];
-    for (const w of wanted) {
-      if (!(w in map)) continue;
-      const s = describeValue(map[w]);
-      if (s && (!textOnly || /[A-Za-z]/.test(s))) return s;
-    }
-    queue.push(...Object.values(o));
-  }
-  return "";
-}
-
-/** For debugging: lists the shape of a response, hiding anything personal. */
-const REDACT = /address|postcode|uprn|lmk|certificate|latitude|longitude|name|email|phone/i;
-function outline(v: unknown, path = "", depth = 0, out: string[] = []): string[] {
-  if (out.length > 400 || depth > 6) return out;
-  if (Array.isArray(v)) {
-    out.push(`${path || "(root)"}: array(${v.length})`);
-    if (v.length) outline(v[0], path + "[0]", depth + 1, out);
-  } else if (v && typeof v === "object") {
-    for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
-      outline(val, path ? `${path}.${k}` : k, depth + 1, out);
-    }
-  } else {
-    const shown = REDACT.test(path) ? "(hidden)" : JSON.stringify(v)?.slice(0, 60);
-    out.push(`${path}: ${typeof v} = ${shown}`);
-  }
-  return out;
-}
-
-function rows(json: unknown): Record<string, unknown>[] {
-  if (Array.isArray(json)) return json as Record<string, unknown>[];
+function rows(json: unknown): Array<Record<string, unknown>> {
+  if (Array.isArray(json)) return json as Array<Record<string, unknown>>;
   const j = json as Record<string, unknown>;
   for (const k of ["data", "rows", "results", "certificates"]) {
     const v = j?.[k];
-    if (Array.isArray(v)) return v as Record<string, unknown>[];
+    if (Array.isArray(v)) return v as Array<Record<string, unknown>>;
     if (v && typeof v === "object") return [v as Record<string, unknown>];
   }
-  return j && typeof j === "object" ? [j] : [];
+  return j && typeof j === "object" ? [j] : new Array<Record<string, unknown>>();
 }
 
 function authHeader(): string | null {
@@ -92,22 +38,17 @@ function authHeader(): string | null {
 async function epcFetch(path: string, params: Record<string, string>) {
   const auth = authHeader();
   if (!auth) throw new Error("EPC credentials are not configured on the server.");
-  const base = process.env.EPC_API_BASE_URL || "https://api.get-energy-performance-data.communities.gov.uk";
+  const base = process.env.EPC_API_BASE_URL || "https://communities.gov.uk";
   const url = new URL(base + path);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   const res = await fetch(url.toString(), {
     headers: { Authorization: auth, Accept: "application/json" },
     cache: "no-store",
   });
-  if (res.status === 404) return [];
+  if (res.status === 404) return new Array<Record<string, unknown>>();
   if (!res.ok) throw new Error(`EPC service responded with ${res.status}`);
   return rows(await res.json());
 }
-
-const RATING_KEYS = [
-  "currentEnergyEfficiencyBand", "currentEnergyRating", "current-energy-rating",
-  "current_energy_band", "currentEnergyBand", "energy_band",
-];
 
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
@@ -118,33 +59,80 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Invalid certificate reference." }, { status: 400 });
       }
       const path = process.env.EPC_CERTIFICATE_PATH || "/api/certificate";
-      const list = await epcFetch(path, { certificate_number: certificate });
+      let list = await epcFetch(path, { certificateNumber: certificate });
+      if (!list.length) list = await epcFetch(path, { certificate_number: certificate });
       const c = list[0];
       if (!c) return NextResponse.json({ error: "Certificate not found." }, { status: 404 });
-
-      // Debug mode: only works while the EPC_DEBUG=1 environment variable is set.
-      if (sp.get("debug") === "1" && process.env.EPC_DEBUG === "1") {
-        return NextResponse.json({ outline: outline(list.length > 1 ? list : c) });
-      }
-
       return NextResponse.json({
         property: {
           totalFloorArea:
-            parseFloat(deepPick(c, ["totalFloorArea", "total-floor-area", "total_floor_area", "floorArea"])) || 0,
-          currentEnergyRating: deepPick(c, RATING_KEYS).toUpperCase().slice(0, 1),
-          mainheatDescription: deepPick(
+            parseFloat(pick(c, "totalFloorArea", "total-floor-area", "total_floor_area", "floorArea")) || 0,
+          currentEnergyRating: pick(
             c,
-            ["mainheatDescription", "mainHeatingDescription", "mainheat-description", "main_heating_description",
-             "mainheat_description", "mainHeating", "main_heating"],
-            true,
+            "currentEnergyEfficiencyBand",
+            "currentEnergyRating",
+            "current-energy-rating",
+            "current_energy_band",
+            "energy_band"
+          )
+            .toUpperCase()
+            .slice(0, 1),
+          mainheatDescription: pick(
+            c,
+            "mainheatDescription",
+            "mainHeatingDescription",
+            "mainheat-description",
+            "main_heating_description",
+            "mainheat_description"
           ),
-          wallsDescription: deepPick(
+          wallsDescription: pick(
             c,
-            ["wallsDescription", "wallDescription", "walls-description", "walls_description", "wall_description", "walls"],
-            true,
+            "wallsDescription",
+            "wallDescription",
+            "walls-description",
+            "walls_description",
+            "wall_description"
           ),
         },
       });
     }
 
-    const postcode =      
+    const postcode = (sp.get("postcode") || "").trim().toUpperCase();
+    if (!/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/.test(postcode)) {
+      return NextResponse.json({ error: "Please enter a valid UK postcode." }, { status: 400 });
+    }
+    const path = process.env.EPC_SEARCH_PATH || "/api/domestic/search";
+    const list = await epcFetch(path, { postcode });
+    const seen = new Set<string>();
+    const addresses = list
+      .map((r) => {
+        const id = pick(r, "certificateNumber", "certificate_number", "lmk-key", "lmk_key");
+        const address =
+          pick(r, "address") ||
+          [
+            pick(r, "addressLine1", "address1", "address-1"),
+            pick(r, "addressLine2", "address2", "address-2"),
+            pick(r, "addressLine3", "address3", "address-3"),
+          ]
+            .filter(Boolean)
+            .join(", ");
+        const rating = pick(
+          r,
+          "currentEnergyEfficiencyBand",
+          "currentEnergyRating",
+          "current-energy-rating",
+          "current_energy_band",
+          "energy_band"
+        )
+          .toUpperCase()
+          .slice(0, 1);
+        return { id, address, rating };
+      })
+      .filter((a) => a.id && a.address && !seen.has(a.address) && seen.add(a.address))
+      .sort((a, b) => a.address.localeCompare(b.address, "en", { numeric: true }));
+    return NextResponse.json({ addresses });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Lookup failed.";
+    return NextResponse.json({ error: msg }, { status: 502 });
+  }
+}
