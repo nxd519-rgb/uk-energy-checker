@@ -397,9 +397,11 @@ async function searchPostcode() {
       className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900"
     />
 
-    <button
-      type="button"
-      disabled={postcodeLoading}
+    
+<button
+  type="button"
+  onClick={searchPostcode}
+  disabled={postcodeLoading}
       className="rounded-lg bg-blue-700 px-5 py-2 font-medium text-white hover:bg-blue-800 disabled:opacity-50"
     >
       {postcodeLoading ? "Searching..." : "Search"}
@@ -409,6 +411,18 @@ async function searchPostcode() {
   <p className="mt-2 text-xs text-gray-500">
     Enter a UK postcode to find charging locations in your area.
   </p>
+  
+{postcodeError && (
+  <p className="mt-2 text-sm text-red-700">
+    {postcodeError}
+  </p>
+)}
+
+{searchedPostcode && !postcodeError && (
+  <p className="mt-2 text-sm text-green-700">
+    Map centred on {searchedPostcode}.
+  </p>
+)}
 </div>
       <div className="mb-3 flex flex-wrap gap-3 text-sm">
         <span className="rounded-lg bg-green-50 px-3 py-2 text-green-800">
