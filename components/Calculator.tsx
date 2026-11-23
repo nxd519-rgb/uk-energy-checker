@@ -19,7 +19,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [unlocked, setUnlocked] = useState(false);
-
+const [unlocked, setUnlocked] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("unlock") === "1") {
       setUnlocked(true);
@@ -132,27 +132,41 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
                     role === r ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-slate-300"
                   }`}
                 >
-                  <input type="radio" name="role" className="sr-only" checked={role === r} onChange={() => setRole(r)} />
-                  {r}
-                </label>
-              ))}
+                      <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200">
+            <div aria-hidden={!unlocked} className={`space-y-3 p-5 text-sm text-slate-700 ${unlocked ? "" : "select-none blur-sm"}`}>
+              <h3 className="font-semibold text-slate-900">Step-by-Step Upgrade &amp; Tariff Action Plan</h3>
+              <p><strong>1. Smart Tariff Switch:</strong> Move to a Time-of-Use tariff (e.g. Octopus Agile/Tracker) to save up to {gbp(Math.round(result.overpayment * 0.65))}/yr on electricity.</p>
+              <p><strong>2. Heating Upgrade ({gbp(result.bus)} Grant):</strong> {result.bus > 0 ? `Eligible for up to ${gbp(result.bus)} via the Boiler Upgrade Scheme towards a heat pump.` : "Optimise boiler flow temperature to 55°C and fit smart TRVs."}</p>
+              <p><strong>3. Insulation ({gbp(result.gbis)} Grant):</strong> {result.gbis > 0 ? `EPC ${result.rating} qualifies for indicative ${gbp(result.gbis)} GBIS insulation support.` : "Focus on draught-proofing and hot water cylinder lagging."}</p>
+              <p><strong>4. Solar + Battery:</strong> A 4kWp solar + 5kWh battery setup offsets ~60% of your {gbp(result.electricitySpend)} electricity spend plus SEG export income.</p>
+              <p><strong>5. Green Finance:</strong> Check green mortgage cashback (£250–£1,000) or 0% retrofit financing before booking.</p>
             </div>
-          </fieldset>
-          <button
-            disabled={loading}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
-          >
-            {loading ? "Searching…" : "Find my home"}
-          </button>
-        </form>
-      )}
+            {!unlocked && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/40 px-4 text-center text-sm font-medium text-slate-800">
+                Your personalised plan is locked
+              </div>
+            )}
+          </div>
 
-      {step === 2 && (
-        <div>
-          <h2 className="text-lg font-semibold">Select your address</h2>
-          <ul className="mt-3 max-h-96 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
-            {addresses.map((a) => (
-              <li key={a.id}>
+          <div className="mt-5 space-y-3 print:hidden">
+            {!unlocked ? (
+              <>
+                <a href={stripeLink} className="block w-full rounded-lg bg-emerald-600 px-4 py-3 text-center font-semibold text-white hover:bg-emerald-700">
+                  Unlock Full Personalized PDF Roadmap (£4.99)
+                </a>
+                <button type="button" onClick={() => setUnlocked(true)} className="block w-full rounded-lg border border-dashed border-amber-400 bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-800 hover:bg-amber-100">
+                  Dev Mode: Preview Full PDF Free
+                </button>
+              </>
+            ) : (
+              <button type="button" onClick={() => window.print()} className="block w-full rounded-lg bg-slate-900 px-4 py-3 text-center font-semibold text-white hover:bg-slate-800">
+                Download / Print PDF Roadmap
+              </button>
+            )}
+            <a href={affiliateLink} target="_blank" rel="noopener noreferrer sponsored" className="block w-full rounded-lg border border-slate-300 px-4 py-3 text-center font-semibold text-slate-800 hover:bg-slate-50">
+              Compare Fixed Heat Pump &amp; Solar Quotes
+            </a>
+          </div>
                 <button
                   onClick={() => choose(a)}
                   disabled={loading}
