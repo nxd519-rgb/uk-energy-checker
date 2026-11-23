@@ -7,7 +7,7 @@ export async function GET() {
 
     if (!token) {
       return Response.json(
-        { error: "PLUG API token is missing from Vercel." },
+        { error: "PLUG_API_TOKEN is missing from Vercel." },
         { status: 500 }
       );
     }
@@ -17,47 +17,71 @@ export async function GET() {
       Accept: "application/json",
     };
 
-    // Step 1: Discover the available OCPI version
+    // 1. Discover available OCPI versions
     const versionsResponse = await fetch(
       "https://plugcharging.co.uk/ocpi/versions",
       { headers, cache: "no-store" }
     );
 
+    const versionsJson = await versionsResponse.json();
+
     if (!versionsResponse.ok) {
-      throw new Error("Could not connect to PLUG versions endpoint.");
+      throw new Error(
+        `PLUG versions request failed: ${versionsResponse.status}`
+      );
     }
 
-    const versionsJson = await versionsResponse.json();
-    const versions = versionsJson?.data?.versions;
+    // OCPI normally returns data as an array
+    const versions = Array.isArray(versionsJson?.data)
+      ? versionsJson.data
+      : versionsJson?.data?.versions;
 
     if (!versions?.length) {
-      throw new Error("No OCPI versions were returned.");
+      return Response.json({
+        error: "PLUG returned no OCPI versions.",
+        status_code: versionsJson?.status_code,
+        status_message: versionsJson?.status_message,
+        response: versionsJson,
+      }, { status: 502 });
     }
 
-    // Step 2: Discover the locations endpoint
-    const versionResponse = await fetch(versions[0].url, {
+    // Prefer OCPI 2.2.1
+    const selectedVersion =
+      versions.find((item: { version: string }) =>
+        item.version === "2.2.1"
+      ) ?? versions[0];
+
+    // 2. Discover the module endpoints
+    const versionResponse = await fetch(selectedVersion.url, {
       headers,
       cache: "no-store",
     });
 
+    const versionJson = await versionResponse.json();
+
     if (!versionResponse.ok) {
-      throw new Error("Could not retrieve PLUG endpoint information.");
+      throw new Error(
+        `PLUG endpoint discovery failed: ${versionResponse.status}`
+      );
     }
 
-    const versionJson = await versionResponse.json();
     const endpoints = versionJson?.data?.endpoints;
 
     const locationsEndpoint = endpoints?.find(
-      (endpoint: { identifier: string; role?: string }) =>
-        endpoint.identifier === "locations" &&
-        (!endpoint.role || endpoint.role === "CPO")
+      (endpoint: { identifier: string }) =>
+        endpoint.identifier === "locations"
     );
 
     if (!locationsEndpoint?.url) {
-      throw new Error("PLUG locations endpoint was not found.");
+      return Response.json({
+        error: "PLUG locations endpoint was not found.",
+        availableEndpoints: endpoints?.map(
+          (endpoint: { identifier: string }) => endpoint.identifier
+        ) ?? [],
+      }, { status: 502 });
     }
 
-    // Step 3: Retrieve charging locations
+    // 3. Retrieve charging locations
     const locationsUrl = new URL(locationsEndpoint.url);
     locationsUrl.searchParams.set("limit", "100");
     locationsUrl.searchParams.set("offset", "0");
@@ -67,14 +91,17 @@ export async function GET() {
       cache: "no-store",
     });
 
-    if (!locationsResponse.ok) {
-      throw new Error("Could not retrieve charging locations.");
-    }
-
     const locationsJson = await locationsResponse.json();
+
+    if (!locationsResponse.ok) {
+      throw new Error(
+        `PLUG locations request failed: ${locationsResponse.status}`
+      );
+    }
 
     return Response.json({
       source: "PLUG Charging",
+      version: selectedVersion.version,
       locations: locationsJson?.data ?? [],
       timestamp: new Date().toISOString(),
     });
@@ -82,14 +109,10 @@ export async function GET() {
   } catch (error) {
     console.error("Charger API error:", error);
 
-    return Response.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong retrieving charging data.",
-      },
-      { status: 500 }
-    );
+    return Response.json({
+      error: error instanceof Error
+        ? error.message
+        : "Unknown charging API error.",
+    }, { status: 500 });
   }
 }
