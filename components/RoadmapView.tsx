@@ -4,28 +4,56 @@
 import { useState } from "react";
 import EVCalculator from "@/components/EVCalculator";
 import EVTariffComparison from "@/components/EVTariffComparison";
-import EVChargingMap from "@/components/EVChargingMap";
-import { ASSUMPTIONS as A, Result, Role, UpgradeOption } from "@/lib/calc";
+
 // Paywall off while you build trust. If you turn it on later, the check MUST
-// happen on the server after payment; a client-side lock can be bypassed.// happen on the server after payment; a client-side lock can be bypassed.
+// happen on the server after payment; a client-side lock can be bypassed.
 const PAYWALL_ENABLED = false;
 
-const gbp = (n: number) => (n < 0 ? "-£" : "£") + Math.abs(Math.round(n)).toLocaleString("en-GB");
+const gbp = (n: number) =>
+  (n < 0 ? "-£" : "£") + Math.abs(Math.round(n)).toLocaleString("en-GB");
+
 const r10 = (n: number) => Math.round(n / 10) * 10;
-const rangeText = (lo: number, hi: number) => `${gbp(r10(lo))} to ${gbp(r10(hi))}`;
+
+const rangeText = (lo: number, hi: number) =>
+  `${gbp(r10(lo))} to ${gbp(r10(hi))}`;
+
 const paybackText = (u: UpgradeOption) =>
-  u.paybackYears === 0 ? "Instant" : u.paybackYears === null || u.paybackYears > 40 ? "Not on bills alone" : `${u.paybackYears} yrs`;
+  u.paybackYears === 0
+    ? "Instant"
+    : u.paybackYears === null || u.paybackYears > 40
+    ? "Not on bills alone"
+    : `${u.paybackYears} yrs`;
+
 const sign = (n: number) => (n >= 0 ? "+" : "") + gbp(n);
 
 const ratingColour: Record<string, string> = {
-  A: "bg-green-600", B: "bg-green-500", C: "bg-lime-500", D: "bg-yellow-500", E: "bg-orange-500", F: "bg-orange-600", G: "bg-red-600",
+  A: "bg-green-600",
+  B: "bg-green-500",
+  C: "bg-lime-500",
+  D: "bg-yellow-500",
+  E: "bg-orange-500",
+  F: "bg-orange-600",
+  G: "bg-red-600",
 };
 
 export default function RoadmapView({
-  address, role, result, stripeLink, affiliateLink, onReset, usingBills,
+  address,
+  role,
+  result,
+  stripeLink,
+  affiliateLink,
+  onReset,
+  usingBills,
 }: {
-  address: string; role: Role; result: Result; stripeLink: string; affiliateLink: string; onReset: () => void; usingBills?: boolean;
-}) {  const [unlocked, setUnlocked] = useState(!PAYWALL_ENABLED);
+  address: string;
+  role: Role;
+  result: Result;
+  stripeLink: string;
+  affiliateLink: string;
+  onReset: () => void;
+  usingBills?: boolean;
+}) {
+  const [unlocked, setUnlocked] = useState(!PAYWALL_ENABLED);
   const isDev = process.env.NODE_ENV !== "production";
 
   return (
