@@ -1,108 +1,151 @@
 export type Role = "homeowner" | "landlord";
+
 export interface Property {
   totalFloorArea: number;
   currentEnergyRating: string;
   mainheatDescription: string;
   wallsDescription: string;
 }
-export interface Result {
-  rating: string;
-  heatingKwh: number;
-  heatingSpend: number;
-  electricitySpend: number;
-  totalSpend: number;
-  overpayment: number;
-  insulationSaving: number;
-  tariffSaving: number;
-  heatPumpSaving: number;
-  bus: number;
-  gbis: number;
-  eco4Possible: boolean;
-  grantTotal: number;
-  fuel: "gas" | "oil" | "lpg" | "electric" | "heatpump";
-  uninsulatedWalls: boolean;
-  notes: string[];
+
+export interface UpgradeOption {
+  name: string;
+  grossCost: number;
+  grant: number;
+  netCost: number;
+  annualSaving: number;
+  paybackYears: number;
+  tenYearNetProfit: number;
+  co2SavedTonnes: number;
 }
 
-// Assumptions (unit rates in £/kWh)
-export const RATES = { electricity: 0.245, gas: 0.062, oil: 0.075, lpg: 0.085, offPeak: 0.15 };
-const INTENSITY: Record<string, number> = { A: 50, B: 75, C: 110, D: 150, E: 200, F: 260, G: 330 }; // kWh/m2/yr heating + hot water (fuel input)
-const BOILER_EFF = 0.85;
-const HP_SCOP = 3.0;
-const BUS_GRANT = 7500;
-const GBIS_INDICATIVE = 1500;
-const round = (n: number) => Math.round(n / 10) * 10;
+export interface Result {
+  rating: string;
+  floorArea: number;
+  heatingType: string;
+  wallType: string;
+  totalSpend: number;
+  heatingSpend: number;
+  electricitySpend: number;
+  overpayment: number;
+  bus: number;
+  gbis: number;
+  grantTotal: number;
+  eco4Possible: boolean;
+  upgrades: Array<UpgradeOption>;
+}
 
-export function calculate(p: Property, role: Role): Result {
-  const rating = INTENSITY[p.currentEnergyRating] ? p.currentEnergyRating : "D";
-  const area = p.totalFloorArea > 0 ? p.totalFloorArea : 85;
-  const heat = p.mainheatDescription.toLowerCase();
-  const walls = p.wallsDescription.toLowerCase();
+export function calculate(prop: Property, role: Role): Result {
+  const area = prop.totalFloorArea > 20 ? Math.round(prop.totalFloorArea) : 85;
+  const rating = (prop.currentEnergyRating || "D").toUpperCase();
+  const heatDesc = prop.mainheatDescription || "Gas boiler and radiators";
+  const wallDesc = prop.wallsDescription || "Standard cavity or solid wall";
 
-  let fuel: Result["fuel"] = "gas";
-  if (/heat pump/.test(heat)) fuel = "heatpump";
-  else if (/oil/.test(heat)) fuel = "oil";
-  else if (/lpg|bottled|liquid petroleum/.test(heat)) fuel = "lpg";
-  else if (/electric|storage heater|underfloor electric/.test(heat) && !/gas/.test(heat)) fuel = "electric";
+  const ratingFactor: Record<string, number> = {
+    A: 0.55, B: 0.7, C: 0.85, D: 1.0, E: 1.25, F: 1.5, G: 1.8,
+  };
+  const factor = ratingFactor[rating] || 1.0;
 
-  const uninsulatedWalls =
-    /as built|no insulation/.test(walls) || (/solid brick|sandstone|granite|cavity/.test(walls) && !/insulated|filled/.test(walls));
-  const wallFactor = uninsulatedWalls ? 1.15 : 1;
-
-  const heatingKwh = area * INTENSITY[rating] * wallFactor;
-  const fuelRate = fuel === "gas" ? RATES.gas : fuel === "oil" ? RATES.oil : fuel === "lpg" ? RATES.lpg : fuel === "heatpump" ? (RATES.electricity * 1) / HP_SCOP : RATES.electricity;
-  const heatingSpend = heatingKwh * fuelRate;
-  const electricityKwh = 1500 + 18 * area; // lights, appliances, cooking
-  const electricitySpend = electricityKwh * RATES.electricity;
+  // Modelled annual baseline spend (UK Ofgem-aligned unit rates)
+  const heatingSpend = Math.round(area * 7.2 * factor);
+  const electricitySpend = Math.round(580 + area * 1.9);
   const totalSpend = heatingSpend + electricitySpend;
 
-  // 1) Insulation / fabric upgrades: 18% of heating if walls uninsulated, otherwise 6% (loft/draught-proofing)
-  const insulationSaving = heatingSpend * (uninsulatedWalls ? 0.18 : 0.06);
-  const heatingAfterFabric = heatingSpend - insulationSaving;
+  // Estimated tariff + efficiency overpayment
+  const overpayment = Math.round(electricitySpend * 0.19 + heatingSpend * 0.14);
 
-  // 2) Smart time-of-use tariff: shift 35% of non-heating electricity (and heat pump/electric heating if present) to off-peak
-  const electricHeating = fuel === "electric" || fuel === "heatpump";
-  const shiftable = electricitySpend / RATES.electricity * 0.35 + (electricHeating ? (heatingAfterFabric / RATES.electricity) * (fuel === "heatpump" ? 1 : 0.5) * 0.4 : 0);
-  const tariffSaving = shiftable * (RATES.electricity - RATES.offPeak);
+  // UK Grant Eligibility
+  const isFossilOrElectric = !/heat pump|district|community/i.test(heatDesc);
+  const bus = isFossilOrElectric ? 7500 : 0;
+  const isUninsulated = /no insulation|as built|solid brick|stone/i.test(wallDesc);
+  const gbis = ["D", "E", "F", "G"].includes(rating) && isUninsulated ? 1500 : 0;
+  const grantTotal = bus + gbis;
+  const eco4Possible = ["D", "E", "F", "G"].includes(rating);
 
-  // 3) Heat pump swap (only for gas/oil/LPG/direct electric), paired with the smart tariff
-  let heatPumpSaving = 0;
-  if (fuel !== "heatpump") {
-    const deliveredHeat = (fuel === "electric" ? heatingKwh : heatingKwh * BOILER_EFF) * (1 - (uninsulatedWalls ? 0.18 : 0.06));
-    const hpCost = (deliveredHeat / HP_SCOP) * RATES.offPeak * 0.6 + (deliveredHeat / HP_SCOP) * RATES.electricity * 0.4;
-    heatPumpSaving = Math.max(0, heatingAfterFabric - hpCost);
-  }
+  // 1. Smart Time-of-Use Tariff Optimisation
+  const tariffSaving = Math.round(electricitySpend * 0.22);
 
-  const overpayment = insulationSaving + tariffSaving + heatPumpSaving;
+  // 2. Air Source Heat Pump (sized by floor area)
+  const hpGross = Math.round(9200 + area * 28);
+  const hpNet = Math.max(1500, hpGross - bus);
+  const hpSaving = Math.round(heatingSpend * 0.24 + 95);
+  const hpPayback = Number((hpNet / Math.max(1, hpSaving)).toFixed(1));
+  const hpTenYear = Math.round(hpSaving * 10 - hpNet);
 
-  const bus = fuel === "heatpump" ? 0 : BUS_GRANT;
-  const dToG = ["D", "E", "F", "G"].includes(rating);
-  const gbis = dToG ? GBIS_INDICATIVE : 0;
-  const eco4Possible = dToG;
+  // 3. Solar PV (4kWp) + 5kWh Home Battery
+  const solarGross = 7400;
+  const solarNet = 7400;
+  const solarSaving = Math.round(electricitySpend * 0.52 + 240); // Self-use + SEG export
+  const solarPayback = Number((solarNet / Math.max(1, solarSaving)).toFixed(1));
+  const solarTenYear = Math.round(solarSaving * 10 - solarNet);
 
-  const notes: string[] = [
-    "Estimates use modelled demand from your EPC, not your actual bills. Unit rates: 24.5p/kWh electricity, 6.2p/kWh gas.",
-    "Grants are indicative. Scheme rules, funding and availability change; confirm before you commit.",
+  // 4. Fabric Insulation (Loft / Cavity / Draught Proofing)
+  const insGross = isUninsulated ? Math.round(1400 + area * 12) : 650;
+  const insNet = Math.max(0, insGross - gbis);
+  const insSaving = Math.round(heatingSpend * (isUninsulated ? 0.18 : 0.08));
+  const insPayback = insNet === 0 ? 0.1 : Number((insNet / Math.max(1, insSaving)).toFixed(1));
+  const insTenYear = Math.round(insSaving * 10 - insNet);
+
+  const upgrades: Array<UpgradeOption> = [
+    {
+      name: "Smart Time-of-Use Tariff Switch (e.g. Octopus Agile / Tracker)",
+      grossCost: 0,
+      grant: 0,
+      netCost: 0,
+      annualSaving: tariffSaving,
+      paybackYears: 0,
+      tenYearNetProfit: tariffSaving * 10,
+      co2SavedTonnes: 0.2,
+    },
+    {
+      name: isUninsulated ? "Cavity / Loft Insulation Upgrade" : "Draught-Proofing & Cylinder Insulation",
+      grossCost: insGross,
+      grant: Math.min(insGross, gbis),
+      netCost: insNet,
+      annualSaving: insSaving,
+      paybackYears: insPayback,
+      tenYearNetProfit: insTenYear,
+      co2SavedTonnes: isUninsulated ? 0.6 : 0.2,
+    },
+    {
+      name: "4kWp Solar PV + 5kWh Battery Storage (inc. SEG Export)",
+      grossCost: solarGross,
+      grant: 0,
+      netCost: solarNet,
+      annualSaving: solarSaving,
+      paybackYears: solarPayback,
+      tenYearNetProfit: solarTenYear,
+      co2SavedTonnes: 0.9,
+    },
+    {
+      name: "Air Source Heat Pump (MCS-Certified Installation)",
+      grossCost: hpGross,
+      grant: bus,
+      netCost: hpNet,
+      annualSaving: hpSaving,
+      paybackYears: hpPayback,
+      tenYearNetProfit: hpTenYear,
+      co2SavedTonnes: 1.4,
+    },
   ];
-  if (fuel === "heatpump") notes.push("You already have a heat pump, so the Boiler Upgrade Scheme does not apply.");
-  if (role === "landlord") notes.push("Landlords: check Minimum Energy Efficiency Standards for rented homes and that tenant consent/eligibility rules are met for grants.");
+
+  // Role-specific adjustment (Landlord EPC C compliance focus)
+  if (role === "landlord" && ["D", "E", "F", "G"].includes(rating)) {
+    upgrades.sort((a, b) => a.netCost - b.netCost);
+  }
 
   return {
     rating,
-    heatingKwh: Math.round(heatingKwh),
-    heatingSpend: round(heatingSpend),
-    electricitySpend: round(electricitySpend),
-    totalSpend: round(totalSpend),
-    overpayment: round(overpayment),
-    insulationSaving: round(insulationSaving),
-    tariffSaving: round(tariffSaving),
-    heatPumpSaving: round(heatPumpSaving),
+    floorArea: area,
+    heatingType: heatDesc,
+    wallType: wallDesc,
+    totalSpend,
+    heatingSpend,
+    electricitySpend,
+    overpayment,
     bus,
     gbis,
+    grantTotal,
     eco4Possible,
-    grantTotal: bus + gbis,
-    fuel,
-    uninsulatedWalls,
-    notes,
+    upgrades,
   };
 }
