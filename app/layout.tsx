@@ -1,31 +1,20 @@
 
 import "./globals.css";
 import type { Metadata } from "next";
-verification: {
-  google: "google5cc3eb71e27bf2ca.html",
-},export const metadata: Metadata = {
-  metadataBase: new URL("https://uk-energy-checker.vercel.app"),
+
+export const metadata: Metadata = {
+  metadataBase: new URL(
+    "https://uk-energy-checker.vercel.app"
+  ),
 
   title: {
-    default: "UK Energy Checker | Free Home Energy Savings Calculators",
+    default:
+      "UK Energy Checker | Free Home Energy Savings Calculators",
     template: "%s | UK Energy Checker",
   },
 
   description:
     "Free UK energy calculators. Compare heat pump installation costs, EV electricity tariffs, solar panel savings and home EPC improvements.",
-
-  keywords: [
-    "UK energy calculator",
-    "heat pump cost calculator",
-    "heat pump installation UK",
-    "EV tariff comparison",
-    "EV charging cost calculator",
-    "solar panel savings calculator",
-    "EPC energy savings",
-    "UK energy grants",
-  ],
-
-  applicationName: "UK Energy Checker",
 
   robots: {
     index: true,
@@ -35,7 +24,7 @@ verification: {
   openGraph: {
     title: "UK Energy Checker | Reduce Your Energy Costs",
     description:
-      "Explore free UK calculators for heat pumps, solar panels, EV charging and home energy efficiency.",
+      "Free UK calculators for heat pumps, solar panels, EV charging and home energy efficiency.",
     url: "https://uk-energy-checker.vercel.app",
     siteName: "UK Energy Checker",
     locale: "en_GB",
@@ -56,3 +45,4 @@ export default function RootLayout({
     </html>
   );
 }
+
