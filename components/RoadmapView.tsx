@@ -115,8 +115,8 @@ export default function RoadmapView({
           </div>
         )}
       </div>
-<EVCalculator />      <div className="mt-5 space-y-2 print:hidden">
-        {!unlocked ? (
+<EVCalculator /> <div className="mt-5 space-y-2 print:hidden">
+<EVTariffComparison />{!unlocked ? (
           <>
             <button type="button" onClick={() => { window.location.href = stripeLink; }} className="block w-full rounded-lg bg-emerald-600 px-4 py-3 text-center font-semibold text-white hover:bg-emerald-700">
               Unlock Full Personalized PDF Roadmap (£4.99)
