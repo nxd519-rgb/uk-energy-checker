@@ -1,10 +1,12 @@
-
 "use client";
 
 import { useState } from "react";
 import EVCalculator from "@/components/EVCalculator";
-import EVTariffComparison from "@/components/EVTariffComparison";
-import HeatPumpCalculator from "@/components/HeatPumpCalculator";import {
+import SmartEVTariffComparison from "@/components/SmartEVTariffComparison";
+import SolarEVCalculator from "@/components/SolarEVCalculator";
+import HeatPumpCalculator from "@/components/HeatPumpCalculator";
+
+import {
   ASSUMPTIONS as A,
   Result,
   Role,
@@ -16,7 +18,7 @@ import HeatPumpCalculator from "@/components/HeatPumpCalculator";import {
 const PAYWALL_ENABLED = false;
 
 const gbp = (n: number) =>
-  (n < 0 ? "-£" : "£") +
+  (n < 0 ? "-¬£" : "¬£") +
   Math.abs(Math.round(n)).toLocaleString("en-GB");
 
 const r10 = (n: number) => Math.round(n / 10) * 10;
@@ -61,6 +63,7 @@ export default function RoadmapView({
   usingBills?: boolean;
 }) {
   const [unlocked, setUnlocked] = useState(!PAYWALL_ENABLED);
+  const [activeTab, setActiveTab] = useState<"home" | "heat" | "ev" | "solar">("home");
   const isDev = process.env.NODE_ENV !== "production";
 
   return (
@@ -141,7 +144,7 @@ export default function RoadmapView({
           Your EPC Certificate Profile
         </p>
         <p>
-          <strong>Floor Area:</strong> {result.floorArea} m² |{" "}
+          <strong>Floor Area:</strong> {result.floorArea} m¬≤ |{" "}
           <strong>Est. Annual Bill:</strong> {gbp(result.totalSpend)} (
           {gbp(result.heatingSpend)} heating /{" "}
           {gbp(result.electricitySpend)} electricity, incl. standing charges)
@@ -154,6 +157,30 @@ export default function RoadmapView({
         </p>
       </div>
 
+      <nav aria-label="Energy assessment sections" className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-4 print:hidden">
+        {([
+          ["home", "Home energy & EPC"],
+          ["heat", "Heat pumps"],
+          ["ev", "EV charging & tariffs"],
+          ["solar", "Solar + EV savings"],
+        ] as const).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setActiveTab(key)}
+            aria-pressed={activeTab === key}
+            className={`rounded-xl border px-3 py-3 text-sm font-semibold transition-colors ${
+              activeTab === key
+                ? "border-emerald-700 bg-emerald-700 text-white"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      <div className={activeTab === "home" ? "block" : "hidden print:block"}>
       <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200">
         <div
           aria-hidden={!unlocked}
@@ -260,14 +287,6 @@ export default function RoadmapView({
           </div>
         )}
       </div>
-<HeatPumpCalculator affiliateLink={affiliateLink} />      {/* Existing EV calculator */}
-      <EVCalculator />
-
-      {/* Existing EV tariff comparison */}
-      <EVTariffComparison />
-
-      {/* New public EV charging map */}
-      <EVChargingMap />
 
       <div className="mt-5 space-y-2 print:hidden">
         {!unlocked ? (
@@ -279,7 +298,7 @@ export default function RoadmapView({
               }}
               className="block w-full rounded-lg bg-emerald-600 px-4 py-3 text-center font-semibold text-white hover:bg-emerald-700"
             >
-              Unlock Full Personalized PDF Roadmap (£4.99)
+              Unlock Full Personalized PDF Roadmap (¬£4.99)
             </button>
 
             {isDev && (
@@ -315,6 +334,25 @@ export default function RoadmapView({
           We may earn a commission if you request quotes through this link. It
           doesn&apos;t cost you more.
         </p>
+      </div>
+
+      </div>
+
+      <div className={activeTab === "heat" ? "mt-6 block" : "hidden"}>
+        <HeatPumpCalculator affiliateLink={affiliateLink} />
+      </div>
+
+      <div className={activeTab === "ev" ? "mt-6 block" : "hidden"}>
+        <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50 p-4">
+          <h3 className="text-lg font-bold text-slate-900">EV charging costs & tariffs</h3>
+          <p className="mt-1 text-sm text-slate-600">Estimate your charging costs and compare EV electricity tariffs. Compare total household costs, not just the overnight rate.</p>
+        </div>
+        <EVCalculator />
+        <SmartEVTariffComparison />
+      </div>
+
+      <div className={activeTab === "solar" ? "mt-6 block" : "hidden"}>
+        <SolarEVCalculator />
       </div>
 
       <div className="mt-4 flex items-center justify-between text-xs text-slate-500 print:hidden">
