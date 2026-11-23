@@ -82,8 +82,7 @@ export default function EVChargingMap() {
 
       mapInstance.current = map;
       markersLayer.current = L.layerGroup().addTo(map);
-    }
-
+    } setMapReady(true);
     initialiseMap();
 
     return () => {
