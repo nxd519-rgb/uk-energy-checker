@@ -1,5 +1,4 @@
-
-import Calculator from "@/components/Calculator";
+import EVSavingsCalculator from "@/components/EVSavingsCalculator";import Calculator from "@/components/Calculator";
 import HeatPumpCalculator from "@/components/HeatPumpCalculator";
 import SmartEVTariffComparison from "@/components/SmartEVTariffComparison";
 import SolarEVCalculator from "@/components/SolarEVCalculator";
