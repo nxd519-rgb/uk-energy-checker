@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
+import { useEffect, useRef, useState } from "react"; const [mapReady, setMapReady] = useState(false);
 type ChargerLocation = {
   id: string;
   name?: string;
