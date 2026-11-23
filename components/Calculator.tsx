@@ -65,6 +65,9 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
     setError("");
   }
 
+  const totalAnnualSavings = result ? result.upgrades.reduce((sum, u) => sum + u.annualSaving, 0) : 0;
+  const totalCo2Saved = result ? result.upgrades.reduce((sum, u) => sum + u.co2SavedTonnes, 0).toFixed(1) : "0";
+
   return (
     <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       {error && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
@@ -112,7 +115,14 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
 
       {step === 4 && result && selected && (
         <div>
-          <p className="text-sm text-slate-500">{selected.address}</p>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-slate-400">Property Retrofit &amp; Tariff Assessment</p>
+              <h2 className="text-base font-semibold text-slate-900">{selected.address}</h2>
+            </div>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium capitalize text-slate-700">{role} Profile</span>
+          </div>
+
           <div className="mt-4 grid grid-cols-3 gap-3 text-center">
             <div className="rounded-xl bg-slate-50 p-4">
               <p className="text-xs uppercase text-slate-500">Current EPC</p>
@@ -128,57 +138,49 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
             </div>
           </div>
 
-          <p className="mt-4 text-sm text-slate-600">
-            Estimated annual energy spend: <strong>{gbp(result.totalSpend)}</strong> ({gbp(result.heatingSpend)} heating, {gbp(result.electricitySpend)} electricity).
-          </p>
-          <ul className="mt-3 space-y-1 text-sm text-slate-700">
-            {result.bus > 0 && <li>✔ Boiler Upgrade Scheme: up to {gbp(result.bus)} towards a heat pump</li>}
-            {result.gbis > 0 && <li>✔ Great British Insulation Scheme: indicative {gbp(result.gbis)} (EPC {result.rating})</li>}
-            {result.eco4Possible && <li>✔ ECO4 may apply if you receive qualifying benefits (not included in total)</li>}
-          </ul>
+          <div className="mt-4 rounded-xl bg-slate-50 p-4 text-xs text-slate-700 space-y-1">
+            <p className="font-semibold text-slate-900">Your EPC Certificate Profile</p>
+            <p><strong>Floor Area:</strong> {result.floorArea} m² &nbsp;|&nbsp; <strong>Est. Annual Energy Bill:</strong> {gbp(result.totalSpend)} ({gbp(result.heatingSpend)} heat / {gbp(result.electricitySpend)} elec)</p>
+            <p><strong>Current Heating:</strong> {result.heatingType}</p>
+            <p><strong>Wall Construction:</strong> {result.wallType}</p>
+          </div>
 
           <div className="relative mt-6 overflow-hidden rounded-xl border border-slate-200">
-            <div aria-hidden={!unlocked} className={`space-y-3 p-5 text-sm text-slate-700 ${unlocked ? "" : "select-none blur-sm"}`}>
-              <h3 className="font-semibold text-slate-900">Step-by-Step Upgrade &amp; Tariff Action Plan</h3>
-              <p><strong>1. Smart Tariff Switch:</strong> Move to a Time-of-Use tariff (e.g. Octopus Agile/Tracker) to save up to {gbp(Math.round(result.overpayment * 0.65))}/yr on electricity.</p>
-              <p><strong>2. Heating Upgrade ({gbp(result.bus)} Grant):</strong> {result.bus > 0 ? `Eligible for up to ${gbp(result.bus)} via the Boiler Upgrade Scheme towards a heat pump.` : "Optimise boiler flow temperature to 55°C and fit smart TRVs."}</p>
-              <p><strong>3. Insulation ({gbp(result.gbis)} Grant):</strong> {result.gbis > 0 ? `EPC ${result.rating} qualifies for indicative ${gbp(result.gbis)} GBIS insulation support.` : "Focus on draught-proofing and hot water cylinder lagging."}</p>
-              <p><strong>4. Solar + Battery:</strong> A 4kWp solar + 5kWh battery setup offsets ~60% of your {gbp(result.electricitySpend)} electricity spend plus SEG export income.</p>
-              <p><strong>5. Green Finance:</strong> Check green mortgage cashback (£250–£1,000) or 0% retrofit financing before booking.</p>
-            </div>
-            {!unlocked && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/40 px-4 text-center text-sm font-medium text-slate-800">
-                Your personalised plan is locked
+            <div aria-hidden={!unlocked} className={`p-5 ${unlocked ? "" : "select-none blur-sm"}`}>
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="text-base font-bold text-slate-900">Financial ROI &amp; Upgrade Roadmap</h3>
+                <span className="text-xs font-semibold text-emerald-700">Combined Savings: up to {gbp(totalAnnualSavings)}/yr ({totalCo2Saved}t CO₂/yr)</span>
               </div>
-            )}
-          </div>
 
-          <div className="mt-5 space-y-3 print:hidden">
-            {!unlocked ? (
-              <>
-                <a href={stripeLink} className="block w-full rounded-lg bg-emerald-600 px-4 py-3 text-center font-semibold text-white hover:bg-emerald-700">
-                  Unlock Full Personalized PDF Roadmap (£4.99)
-                </a>
-                <button type="button" onClick={() => setUnlocked(true)} className="block w-full rounded-lg border border-dashed border-amber-400 bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-800 hover:bg-amber-100">
-                  Dev Mode: Preview Full PDF Free
-                </button>
-              </>
-            ) : (
-              <button type="button" onClick={() => window.print()} className="block w-full rounded-lg bg-slate-900 px-4 py-3 text-center font-semibold text-white hover:bg-slate-800">
-                Download / Print PDF Roadmap
-              </button>
-            )}
-            <a href={affiliateLink} target="_blank" rel="noopener noreferrer sponsored" className="block w-full rounded-lg border border-slate-300 px-4 py-3 text-center font-semibold text-slate-800 hover:bg-slate-50">
-              Compare Fixed Heat Pump &amp; Solar Quotes
-            </a>
-          </div>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500">
+                      <th className="py-2 pr-2 font-semibold">Measure</th>
+                      <th className="py-2 px-2 font-semibold">Est. Cost</th>
+                      <th className="py-2 px-2 font-semibold">Grant</th>
+                      <th className="py-2 px-2 font-semibold">Net Cost</th>
+                      <th className="py-2 px-2 font-semibold">Saving/yr</th>
+                      <th className="py-2 px-2 font-semibold">Payback</th>
+                      <th className="py-2 pl-2 font-semibold">10-Yr Net</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-800">
+                    {result.upgrades.map((u, idx) => (
+                      <tr key={idx}>
+                        <td className="py-2.5 pr-2 font-medium">{u.name}</td>
+                        <td className="py-2.5 px-2 text-slate-500">{gbp(u.grossCost)}</td>
+                        <td className="py-2.5 px-2 text-emerald-700">{u.grant > 0 ? `-${gbp(u.grant)}` : "£0"}</td>
+                        <td className="py-2.5 px-2 font-semibold">{gbp(u.netCost)}</td>
+                        <td className="py-2.5 px-2 font-semibold text-emerald-700">+{gbp(u.annualSaving)}</td>
+                        <td className="py-2.5 px-2">{u.paybackYears === 0 ? "Instant" : `${u.paybackYears} yrs`}</td>
+                        <td className={`py-2.5 pl-2 font-semibold ${u.tenYearNetProfit >= 0 ? "text-emerald-700" : "text-slate-600"}`}>
+                          {u.tenYearNetProfit >= 0 ? `+${gbp(u.tenYearNetProfit)}` : gbp(u.tenYearNetProfit)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-          <div className="mt-4 flex items-center justify-between text-xs text-slate-500 print:hidden">
-            <button onClick={reset} className="underline">Check another postcode</button>
-            <span>Modelled using GOV.UK EPC data &amp; Ofgem baselines</span>
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
+              <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
