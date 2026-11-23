@@ -195,6 +195,38 @@ export default function EVChargingMap() {
         </button>
       </div>
 
+{/* UK postcode search */}
+<div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+  <label
+    htmlFor="charger-postcode"
+    className="mb-2 block text-sm font-semibold text-gray-800"
+  >
+    Find EV charging stations near you
+  </label>
+
+  <div className="flex flex-wrap gap-2">
+    <input
+      id="charger-postcode"
+      type="text"
+      value={postcode}
+      onChange={(e) => setPostcode(e.target.value)}
+      placeholder="Enter UK postcode (e.g. HG5 0AA)"
+      className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900"
+    />
+
+    <button
+      type="button"
+      disabled={postcodeLoading}
+      className="rounded-lg bg-blue-700 px-5 py-2 font-medium text-white hover:bg-blue-800 disabled:opacity-50"
+    >
+      {postcodeLoading ? "Searching..." : "Search"}
+    </button>
+  </div>
+
+  <p className="mt-2 text-xs text-gray-500">
+    Enter a UK postcode to find charging locations in your area.
+  </p>
+</div>
       <div className="mb-3 flex flex-wrap gap-3 text-sm">
         <span className="rounded-lg bg-green-50 px-3 py-2 text-green-800">
           {totalStations} charging locations loaded
