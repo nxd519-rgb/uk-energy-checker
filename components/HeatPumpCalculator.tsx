@@ -23,7 +23,7 @@ export default function HeatPumpCalculator({
   const [grant, setGrant] = useState(0);
   const [gasUse, setGasUse] = useState(12000);
   const [boilerEfficiency, setBoilerEfficiency] = useState(85);
-  const [scop, setScop] = useState(3.5);
+  const [scop, setScop] = useState(3.0);
   const [gasRate, setGasRate] = useState(7.97);
   const [electricRate, setElectricRate] = useState(26.32);
   const [gasStanding, setGasStanding] = useState(29.68);
@@ -33,6 +33,8 @@ export default function HeatPumpCalculator({
   const gasCost = gasUse * gasRate / 100 + (removeGas ? gasStanding * 365 / 100 : 0);
   const heatPumpCost = heatDemand / Math.max(1, scop) * electricRate / 100;
   const annualSaving = gasCost - heatPumpCost;
+  const lowSaving = gasCost - heatDemand / Math.max(1,scop*0.85) * electricRate /100;
+  const highSaving = gasCost - heatDemand / (scop*1.15) * electricRate /100;
   const netCost = Math.max(0, installationCost - grant);
   const payback = annualSaving > 0 ? netCost / annualSaving : null;
 
@@ -62,7 +64,7 @@ export default function HeatPumpCalculator({
       <div className="mb-6 rounded-2xl bg-gradient-to-br from-slate-950 via-orange-950 to-orange-800 p-6 text-white shadow-lg" aria-live="polite"><p className="text-sm text-orange-100">{annualSaving>=0?"Estimated annual heating saving":"Estimated extra annual heating cost"}</p><p className="mt-2 text-5xl font-extrabold">{money(Math.abs(annualSaving))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-orange-100">{money(Math.abs(annualSaving)/12)} per month · running costs only</p></div>
       <div className="grid gap-4 md:grid-cols-3">
         <label className="block text-sm font-medium text-slate-700">
-          Installation cost (£)
+          Gross installation quote before grant (£)
           <input
             type="number"
             min="0"
@@ -77,7 +79,7 @@ export default function HeatPumpCalculator({
         </label>
 
         <label className="block text-sm font-medium text-slate-700">
-          Assumed grant (£)
+          Confirmed or assumed grant (£)
           <input
             type="number"
             min="0"
@@ -107,7 +109,7 @@ export default function HeatPumpCalculator({
         </label>
       </div></details>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <p className="mt-4 text-sm text-slate-600">Efficiency sensitivity (SCOP ±15%): annual net savings {money(lowSaving)} to {money(highSaving)}. Negative values mean higher running costs. This is a scenario, not a confidence interval.</p><div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="rounded-xl bg-slate-50 p-4">Annual gas boiler cost: <strong>{money(gasCost)}</strong></div>
         <div className="rounded-xl bg-slate-50 p-4">Annual heat pump cost: <strong>{money(heatPumpCost)}</strong></div>
       </div>
@@ -145,7 +147,7 @@ export default function HeatPumpCalculator({
       <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
         <strong>Important:</strong> These are adjustable
         example assumptions, not a personalised quote.
-        Enter your actual tariff rates. Default rates are illustrative, not live prices.
+        Enter your actual tariff rates. Default rates are Ofgem GB averages for Oct–Dec 2026, not live prices.
         Enter only gas used for heating and hot water, excluding cooking.
         Heat demand is gas use multiplied by boiler efficiency; heat pump electricity use is heat demand divided by SCOP.
         Grants depend on eligibility. Check the{" "}
