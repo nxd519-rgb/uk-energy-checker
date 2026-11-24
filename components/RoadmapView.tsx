@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import EVCalculator from "@/components/EVCalculator";
 import SmartEVTariffComparison from "@/components/SmartEVTariffComparison";
 import SolarEVCalculator from "@/components/SolarEVCalculator";
 import HeatPumpCalculator from "@/components/HeatPumpCalculator";
@@ -18,7 +17,7 @@ import {
 const PAYWALL_ENABLED = false;
 
 const gbp = (n: number) =>
-  (n < 0 ? "-¬£" : "¬£") +
+  (n < 0 ? "-£" : "£") +
   Math.abs(Math.round(n)).toLocaleString("en-GB");
 
 const r10 = (n: number) => Math.round(n / 10) * 10;
@@ -83,7 +82,8 @@ export default function RoadmapView({
         </span>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+      <div className="mt-5 rounded-2xl bg-slate-900 p-6 text-white"><p className="text-sm text-slate-300">Estimated annual savings from combined home upgrades</p><p className="mt-2 text-4xl font-extrabold">{gbp(r10(result.combined.central))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-slate-300">Estimated range: {rangeText(result.combined.low,result.combined.high)} per year · before installation costs</p></div>
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
         <div className="rounded-xl bg-slate-50 p-4">
           <p className="text-xs uppercase text-slate-500">Current EPC</p>
           <span
@@ -144,7 +144,7 @@ export default function RoadmapView({
           Your EPC Certificate Profile
         </p>
         <p>
-          <strong>Floor Area:</strong> {result.floorArea} m¬≤ |{" "}
+          <strong>Floor Area:</strong> {result.floorArea} m² |{" "}
           <strong>Est. Annual Bill:</strong> {gbp(result.totalSpend)} (
           {gbp(result.heatingSpend)} heating /{" "}
           {gbp(result.electricitySpend)} electricity, incl. standing charges)
@@ -208,13 +208,13 @@ export default function RoadmapView({
           {result.upgrades.map((u, idx) => (
             <div
               key={idx}
-              className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs print:break-inside-avoid"
+              className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm print:break-inside-avoid"
             >
               <div className="flex items-start justify-between gap-2">
                 <span className="font-semibold text-slate-900">
                   {idx + 1}. {u.name}
                 </span>
-                <span className="whitespace-nowrap font-bold text-emerald-700">
+                <span className="text-right text-lg font-bold text-slate-900">
                   {rangeText(u.annualSavingLow, u.annualSavingHigh)}/yr
                 </span>
               </div>
@@ -298,7 +298,7 @@ export default function RoadmapView({
               }}
               className="block w-full rounded-lg bg-emerald-600 px-4 py-3 text-center font-semibold text-white hover:bg-emerald-700"
             >
-              Unlock Full Personalized PDF Roadmap (¬£4.99)
+              Unlock Full Personalized PDF Roadmap (£4.99)
             </button>
 
             {isDev && (
@@ -347,7 +347,7 @@ export default function RoadmapView({
           <h3 className="text-lg font-bold text-slate-900">EV charging costs & tariffs</h3>
           <p className="mt-1 text-sm text-slate-600">Estimate your charging costs and compare EV electricity tariffs. Compare total household costs, not just the overnight rate.</p>
         </div>
-        <EVCalculator />
+
         <SmartEVTariffComparison />
       </div>
 
