@@ -46,7 +46,7 @@ export default function HeatPumpCalculator({
   ];
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="mt-6 rounded-2xl border border-orange-100 bg-white p-5 shadow-lg sm:p-8">
       <div className="mb-5">
         <h2 className="text-2xl font-bold text-slate-900">
           Heat Pump Installation Calculator
@@ -59,7 +59,7 @@ export default function HeatPumpCalculator({
         </p>
       </div>
 
-      <div className="mb-6 rounded-2xl bg-slate-900 p-6 text-white" aria-live="polite"><p className="text-sm text-slate-300">{annualSaving>=0?"Estimated annual heating saving":"Estimated extra annual heating cost"}</p><p className="mt-2 text-5xl font-extrabold">{money(Math.abs(annualSaving))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-slate-300">{money(Math.abs(annualSaving)/12)} per month · running costs only</p></div>
+      <div className="mb-6 rounded-2xl bg-gradient-to-br from-slate-950 via-orange-950 to-orange-800 p-6 text-white shadow-lg" aria-live="polite"><p className="text-sm text-orange-100">{annualSaving>=0?"Estimated annual heating saving":"Estimated extra annual heating cost"}</p><p className="mt-2 text-5xl font-extrabold">{money(Math.abs(annualSaving))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-orange-100">{money(Math.abs(annualSaving)/12)} per month · running costs only</p></div>
       <div className="grid gap-4 md:grid-cols-3">
         <label className="block text-sm font-medium text-slate-700">
           Installation cost (£)
