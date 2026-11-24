@@ -95,7 +95,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
     setLoading(false);
   }
 
-  const usingBills = bills.annualGasKwh !== undefined || bills.annualElecKwh !== undefined;
+  const usingBills = Object.values(bills).some(v=>v!==undefined);
   const visible = addresses.filter((a) => a.address.toLowerCase().includes(filter.trim().toLowerCase()));
 
   return (
