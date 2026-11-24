@@ -123,8 +123,7 @@ export default function RoadmapView({
           role="note"
           className="mt-4 rounded-lg bg-emerald-50 p-3 text-xs text-emerald-900"
         >
-          These figures use the usage you entered, so they should be closer to
-          your real bills.
+          Your supplied usage or rates replace the corresponding default assumptions.
         </p>
       )}
 
@@ -268,7 +267,7 @@ export default function RoadmapView({
               Assumptions and limits (updated {A.lastUpdated})
             </p>
             <p>
-              Prices: {A.priceSource}: electricity{" "}
+              Default prices (unless overridden): {A.priceSource}: electricity{" "}
               {(A.elecPerKwh * 100).toFixed(2)}p/kWh, gas{" "}
               {(A.gasPerKwh * 100).toFixed(2)}p/kWh, plus standing charges.
               Energy use is estimated from EPC band and floor area unless applicable actual usage is entered. Paybacks exclude unconfirmed grants. Heat pump efficiency {A.heatPumpScop}. Solar:{" "}
