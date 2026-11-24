@@ -44,6 +44,20 @@ const tools = [
   },
 ];
 
+const quoteProviders = {
+  home: [{name:"TrustMark",url:"https://www.trustmark.org.uk/",price:"Request a quote",scope:"Find registered home improvement installers"}],
+  heat: [{name:"British Gas",url:"https://www.britishgas.co.uk/heating/air-source-heat-pumps.html",price:"Online estimate",scope:"Final quote after technical survey"},{name:"BOXT",url:"https://www.boxt.co.uk/",price:"From £4,799",scope:"Advertised heat pump installation; check grant assumptions and scope"},{name:"Universal Energy",url:"https://universal-energy.co.uk/",price:"From £7,000",scope:"Check postcode coverage and grant treatment"}],
+  ev: [{name:"BOXT",url:"https://www.boxt.co.uk/",price:"From £909",scope:"EV charger installation"},{name:"Universal Energy",url:"https://universal-energy.co.uk/",price:"From £990",scope:"EV charger installation; check postcode coverage"},{name:"ECONEXIS",url:"https://econexis.co.uk/pricing",price:"From £1,150",scope:"7 kW charger, standard installation; check coverage"}],
+  solar: [{name:"Octopus Energy",url:"https://octopus.energy/order/solar/",price:"From £6,663",scope:"2 panels, no battery; April 2026 price"},{name:"ECONEXIS",url:"https://econexis.co.uk/pricing",price:"From £4,990",scope:"4.7 kWp, 10 panels, no battery; check coverage"},{name:"Newpower",url:"https://www.newpoweruk.co.uk/",price:"From £6,995",scope:"Solar plus battery; check specification and coverage"}]
+};
+function InstallationQuotes({sector}:{sector:keyof typeof quoteProviders}) {
+ return <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-8">
+ <h3 className="text-xl font-bold">Compare installation prices</h3>
+ <p className="mt-2 text-sm text-slate-600">Published starting prices checked 24 November 2026, not live personalised quotes. Packages are not necessarily comparable. Confirm equipment, installation scope, grants, VAT and availability directly with each provider.</p>
+ <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{quoteProviders[sector].map(p=><article key={p.name} className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4"><h4 className="font-bold">{p.name}</h4><p className="mt-2 text-2xl font-extrabold text-blue-900">{p.price}</p><p className="mt-2 text-sm text-slate-600">{p.scope}</p><a href={p.url} target="_blank" rel="noopener noreferrer" className="mt-auto pt-4 font-semibold text-blue-800 underline">Get current quote ↗</a></article>)}</div>
+ <p className="mt-4 text-xs text-slate-500">These are selected providers, not a whole-market comparison or endorsement. No customer information is sent automatically. Prices may change.</p></section>;
+}
+
 export default function Page() {
   const affiliateLink = process.env.AFFILIATE_LINK || "";
 
@@ -158,6 +172,7 @@ export default function Page() {
             stripeLink={process.env.STRIPE_PAYMENT_LINK || "#"}
             affiliateLink={affiliateLink}
           />
+          <InstallationQuotes sector="home" />
         </div>
       </section>
 
@@ -177,6 +192,7 @@ export default function Page() {
           </p>
 
           <HeatPumpCalculator affiliateLink={affiliateLink} />
+          <InstallationQuotes sector="heat" />
         </div>
       </section>
 
@@ -196,6 +212,7 @@ export default function Page() {
           </p>
 
           <SmartEVTariffComparison />
+          <InstallationQuotes sector="ev" />
         </div>
       </section>
 
@@ -216,6 +233,7 @@ export default function Page() {
           </p>
 
           <SolarEVCalculator />
+          <InstallationQuotes sector="solar" />
         </div>
       </section>
 
