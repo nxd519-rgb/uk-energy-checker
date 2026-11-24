@@ -4,7 +4,7 @@ const money = (n: number) => new Intl.NumberFormat("en-GB", { style: "currency",
 const Field = ({label,value,set,unit}: {label:string;value:number;set:(v:number)=>void;unit:string}) => <label className="block text-sm text-slate-700"><span className="mb-1 block font-medium">{label}</span><div className="flex items-center rounded-lg border border-slate-300"><input className="w-full min-w-0 rounded-lg p-3" type="number" min="0" step="any" value={value} onChange={e=>set(Math.max(0,Number(e.target.value)||0))}/><span className="pr-3 text-xs text-slate-500">{unit}</span></div></label>;
 export default function SmartEVTariffComparison(){
  const [miles,setMiles]=useState(10000),[eff,setEff]=useState(3.5),[house,setHouse]=useState(2700),[homeNight,setHomeNight]=useState(15),[evNight,setEvNight]=useState(90),[loss,setLoss]=useState(10);
- const [standard,setStandard]=useState(25),[standardStanding,setStandardStanding]=useState(50),[day,setDay]=useState(29),[night,setNight]=useState(7),[evStanding,setEvStanding]=useState(50);
+ const [standard,setStandard]=useState(26.32),[standardStanding,setStandardStanding]=useState(54.83),[day,setDay]=useState(29),[night,setNight]=useState(7),[evStanding,setEvStanding]=useState(50);
  const [homeShare,setHomeShare]=useState(100);
  const chargeKwh=miles*homeShare/100/Math.max(eff,0.1)/(1-Math.min(loss,50)/100);
  const standardAnnual=(house+chargeKwh)*standard/100+365*standardStanding/100;
