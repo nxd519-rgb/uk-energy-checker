@@ -59,6 +59,7 @@ export default function HeatPumpCalculator({
         </p>
       </div>
 
+      <div className="mb-6 rounded-2xl bg-slate-900 p-6 text-white" aria-live="polite"><p className="text-sm text-slate-300">{annualSaving>=0?"Estimated annual heating saving":"Estimated extra annual heating cost"}</p><p className="mt-2 text-5xl font-extrabold">{money(Math.abs(annualSaving))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-slate-300">{money(Math.abs(annualSaving)/12)} per month · running costs only</p></div>
       <div className="grid gap-4 md:grid-cols-3">
         <label className="block text-sm font-medium text-slate-700">
           Installation cost (£)
@@ -90,7 +91,9 @@ export default function HeatPumpCalculator({
           />
         </label>
 
-        {inputs.map(({ label, value, setter, min, max }) => (
+        <label className="block text-sm font-medium text-slate-700">Annual gas use for heating and hot water (kWh)<input type="number" min="0" value={gasUse} onChange={e=>setGasUse(Math.max(0,Number(e.target.value)||0))} className="mt-2 w-full rounded-lg border border-slate-300 p-3"/></label>
+      </div><details className="mt-4 rounded-xl border p-4"><summary className="cursor-pointer font-medium">Advanced settings and energy rates</summary><div className="mt-4 grid gap-4 sm:grid-cols-2">
+        {inputs.slice(1).map(({ label, value, setter, min, max }) => (
           <label key={label} className="block text-sm font-medium text-slate-700">
             {label}
             <input type="number" min={min} max={max} step="any" value={value}
@@ -102,7 +105,7 @@ export default function HeatPumpCalculator({
           <input type="checkbox" checked={removeGas} onChange={(e) => setRemoveGas(e.target.checked)} />
           Gas supply removed entirely (avoid gas standing charge)
         </label>
-      </div>
+      </div></details>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="rounded-xl bg-slate-50 p-4">Annual gas boiler cost: <strong>{money(gasCost)}</strong></div>
