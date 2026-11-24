@@ -155,7 +155,7 @@ export default function Calculator({ stripeLink, affiliateLink }: { stripeLink: 
 
       {step === "result" && result && selected && (
         <>
-          <details className="mb-5 rounded-xl border p-4"><summary className="cursor-pointer font-medium">Optional: improve estimates using your actual bills</summary><BillsForm onApply={applyBills} active={usingBills} /></details>
+          <BillsForm onApply={applyBills} active={usingBills} />
           <RoadmapView address={selected.address} role={role} result={result} stripeLink={stripeLink} affiliateLink={affiliateLink} onReset={backToSearch} usingBills={usingBills} />
         </>
       )}
