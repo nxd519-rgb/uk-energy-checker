@@ -9,10 +9,10 @@ export default function SolarEVCalculator(){
  const evDemand=miles/Math.max(0.1,eff)/(1-Math.min(50,loss)/100);
  const solarToEV=Math.min(excess* Math.min(100,availableShare)/100,evDemand);
  const avoided=solarToEV*importP/100, forgone=solarToEV*exportP/100, net=avoided-forgone;
- return <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+ return <section className="rounded-2xl border border-amber-100 bg-white p-5 shadow-lg sm:p-8">
  <h3 className="text-xl font-bold text-slate-900">Solar panels + EV charging savings</h3>
  <p className="mt-2 text-sm text-slate-600">Estimate the financial benefit of using surplus solar generation to charge your EV instead of exporting it. Use the rate you would otherwise pay to charge, including an overnight rate if applicable. The result depends on whether your car is at home while panels generate power.</p>
- <div className="mt-5 rounded-2xl bg-slate-900 p-6 text-white" aria-live="polite"><p className="text-sm text-slate-300">{net>=0?"Estimated saving from solar EV charging":"Estimated extra cost vs exporting"}</p><p className="mt-2 text-5xl font-extrabold">{gbp(Math.abs(net))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-slate-300">{gbp(Math.abs(net)/12)} per month · compared with exporting surplus solar</p></div>
+ <div className="mt-5 rounded-2xl bg-gradient-to-br from-amber-950 via-amber-800 to-orange-700 p-6 text-white shadow-lg" aria-live="polite"><p className="text-sm text-amber-100">{net>=0?"Estimated saving from solar EV charging":"Estimated extra cost vs exporting"}</p><p className="mt-2 text-5xl font-extrabold">{gbp(Math.abs(net))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-amber-100">{gbp(Math.abs(net)/12)} per month · compared with exporting surplus solar</p></div>
  <div className="mt-5 grid gap-4 sm:grid-cols-2">
  <NumberField label="Solar panel system" value={kwp} onChange={setKwp} unit="kWp"/>
  <NumberField label="Surplus solar available when EV is home" value={availableShare} onChange={v=>setAvailableShare(Math.min(100,v))} unit="%"/><NumberField label="EV mileage" value={miles} onChange={setMiles} unit="miles/year"/>
