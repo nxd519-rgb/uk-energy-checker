@@ -5,7 +5,8 @@ const Field = ({label,value,set,unit}: {label:string;value:number;set:(v:number)
 export default function SmartEVTariffComparison(){
  const [miles,setMiles]=useState(10000),[eff,setEff]=useState(3.5),[house,setHouse]=useState(2700),[homeNight,setHomeNight]=useState(15),[evNight,setEvNight]=useState(90),[loss,setLoss]=useState(10);
  const [standard,setStandard]=useState(25),[standardStanding,setStandardStanding]=useState(50),[day,setDay]=useState(29),[night,setNight]=useState(7),[evStanding,setEvStanding]=useState(50);
- const chargeKwh=miles/Math.max(eff,0.1)/(1-Math.min(loss,50)/100);
+ const [homeShare,setHomeShare]=useState(100);
+ const chargeKwh=miles*homeShare/100/Math.max(eff,0.1)/(1-Math.min(loss,50)/100);
  const standardAnnual=(house+chargeKwh)*standard/100+365*standardStanding/100;
  const nightKwh=house*homeNight/100+chargeKwh*evNight/100;
  const dayKwh=house+chargeKwh-nightKwh;
@@ -16,18 +17,18 @@ export default function SmartEVTariffComparison(){
   <p className="mt-2 text-sm text-slate-600">Compare the entire electricity bill, including daytime household use, overnight charging and standing charges. Enter the actual rates from your tariff offers.</p>
   <div className="mt-5 rounded-2xl bg-gradient-to-br from-blue-950 via-blue-800 to-indigo-700 p-6 text-white shadow-lg" aria-live="polite"><p className="text-sm text-blue-100">{saving>=0?"Estimated annual electricity saving":"Estimated extra annual electricity cost"}</p><p className="mt-2 text-5xl font-extrabold tracking-tight">{money(Math.abs(saving))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-blue-100">{money(Math.abs(saving)/12)} per month · whole household including EV</p></div>
   <div className="mt-5 grid gap-4 sm:grid-cols-2">
-   <Field label="Annual EV mileage" value={miles} set={setMiles} unit="miles"/><Field label="Other household electricity" value={house} set={setHouse} unit="kWh/year"/>
+   <Field label="Annual EV mileage" value={miles} set={setMiles} unit="miles"/><Field label="Household electricity excluding EV" value={house} set={setHouse} unit="kWh/year"/>
    <Field label="Standard unit rate" value={standard} set={setStandard} unit="p/kWh"/><Field label="EV tariff daytime rate" value={day} set={setDay} unit="p/kWh"/>
-   <Field label="EV tariff night rate" value={night} set={setNight} unit="p/kWh"/></div><details className="mt-4 rounded-xl border p-4"><summary className="cursor-pointer font-medium">Advanced settings</summary><div className="mt-4 grid gap-4 sm:grid-cols-2"><Field label="EV efficiency" value={eff} set={setEff} unit="miles/kWh"/><Field label="Standard standing charge" value={standardStanding} set={setStandardStanding} unit="p/day"/><Field label="EV tariff standing charge" value={evStanding} set={setEvStanding} unit="p/day"/><Field label="Charging losses" value={loss} set={setLoss} unit="%"/>
+   <Field label="EV tariff night rate" value={night} set={setNight} unit="p/kWh"/></div><details className="mt-4 rounded-xl border p-4"><summary className="cursor-pointer font-medium">Advanced settings</summary><div className="mt-4 grid gap-4 sm:grid-cols-2"><Field label="Share of EV mileage charged at home" value={homeShare} set={v=>setHomeShare(Math.min(100,v))} unit="%"/><Field label="EV efficiency" value={eff} set={setEff} unit="miles/kWh"/><Field label="Standard standing charge" value={standardStanding} set={setStandardStanding} unit="p/day"/><Field label="EV tariff standing charge" value={evStanding} set={setEvStanding} unit="p/day"/><Field label="Charging losses" value={loss} set={setLoss} unit="%"/>
    <Field label="EV charging in night window" value={evNight} set={v=>setEvNight(Math.min(100,v))} unit="%"/><Field label="Other household use at night" value={homeNight} set={v=>setHomeNight(Math.min(100,v))} unit="%"/>
   </div></details>
   <div className="mt-5 grid gap-3 sm:grid-cols-3">
    <div className="rounded-xl bg-slate-100 p-4"><p className="text-xs text-slate-600">Standard annual bill</p><p className="text-2xl font-bold">{money(standardAnnual)}</p></div>
    <div className="rounded-xl bg-blue-50 p-4"><p className="text-xs text-blue-800">EV tariff annual bill</p><p className="text-2xl font-bold">{money(evAnnual)}</p></div>
-   <div className="rounded-xl bg-emerald-50 p-4"><p className="text-xs text-emerald-800">{saving>=0?"Estimated annual saving":"Estimated additional cost"}</p><p className="text-2xl font-bold text-emerald-800">{money(Math.abs(saving))}</p></div>
+   <div className="rounded-xl bg-slate-100 p-4"><p className="text-xs text-slate-900">{saving>=0?"Estimated annual saving":"Estimated additional cost"}</p><p className="text-2xl font-bold text-slate-900">{money(Math.abs(saving))}</p></div>
   </div>
   <p className="mt-3 text-sm text-slate-700">Estimated electricity bought for EV charging: <strong>{Math.round(chargeKwh).toLocaleString("en-GB")} kWh/year</strong>. {saving>=0?"The EV tariff is cheaper under these assumptions.":"The standard tariff is cheaper under these assumptions."}</p>
-  <p className="mt-2 text-xs text-slate-500">Example rates are illustrative, not live prices. Assumes all charging occurs at home and the stated share of consumption fits the tariff's actual off-peak window. Some tariffs have eligibility, charger and vehicle restrictions; check supplier terms. Charging losses are capped at 50% for calculation safety.</p>
+  <p className="mt-2 text-xs text-slate-500">Example rates are illustrative, not live prices. Excludes public charging costs, assumed unchanged between tariffs. Assumes the stated share of home consumption fits the tariff's actual off-peak window. Some tariffs have eligibility, charger and vehicle restrictions; check supplier terms. Charging losses are capped at 50% for calculation safety.</p>
  </section>;
 }
 
