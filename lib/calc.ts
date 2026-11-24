@@ -11,6 +11,10 @@ export interface Property {
 export interface Bills {
   annualGasKwh?: number;
   annualElecKwh?: number;
+  gasRate?: number;
+  elecRate?: number;
+  gasStanding?: number;
+  elecStanding?: number;
 }
 
 export interface UpgradeOption {
@@ -61,7 +65,7 @@ export interface Result {
 /* Items marked VERIFY are my estimates, check them before launch.     */
 /* ------------------------------------------------------------------ */
 export const ASSUMPTIONS = {
-  lastUpdated: "23 Nov 2026",
+  lastUpdated: "24 Nov 2026",
   priceSource: "Ofgem price cap, 1 Oct to 31 Dec 2026 (Direct Debit, GB average)",
   gasPerKwh: 0.0797,
   gasStandingPerYear: 0.2968 * 365,
@@ -130,10 +134,10 @@ function detectWall(desc: string): WallKind {
 
 const r = (n: number) => Math.round(n);
 
-function solarValue(elecKwh: number, selfFrac: number, seg: number) {
+function solarValue(elecKwh: number, selfFrac: number, seg: number, rate: number) {
   const gen = A.solarKwp * A.solarKwhPerKwp;
   const self = Math.min(gen * selfFrac, elecKwh * 0.7);
-  return self * A.elecPerKwh + (gen - self) * seg;
+  return self * rate + (gen - self) * seg;
 }
 
 function build(
@@ -157,6 +161,7 @@ function build(
 }
 
 export function calculate(prop: Property, role: Role, bills: Bills = {}): Result {
+  const A = {...ASSUMPTIONS, gasPerKwh: (bills.gasRate ?? ASSUMPTIONS.gasPerKwh*100)/100, elecPerKwh: (bills.elecRate ?? ASSUMPTIONS.elecPerKwh*100)/100, gasStandingPerYear: (bills.gasStanding ?? ASSUMPTIONS.gasStandingPerYear*100/365)*365/100, elecStandingPerYear: (bills.elecStanding ?? ASSUMPTIONS.elecStandingPerYear*100/365)*365/100};
   const usedFallbacks: string[] = [];
   const notes: string[] = [];
 
@@ -185,7 +190,9 @@ export function calculate(prop: Property, role: Role, bills: Bills = {}): Result
   const fuelPrice = fuel === "electric" || fuel === "heatpump" ? A.elecPerKwh : fuel === "oil_lpg" ? A.oilLpgPerKwh : A.gasPerKwh;
   const heatEnergyCost = heatInput * fuelPrice;
   const gasStanding = fuel === "gas" || fuel === "other" ? A.gasStandingPerYear : 0;
-  const elecKwh = bills.annualElecKwh ?? 1800 + area * 8;
+  const elecKwh = bills.annualElecKwh !== undefined ? Math.max(0, bills.annualElecKwh - ((fuel === "electric" || fuel === "heatpump") ? heatInput : 0)) : 1800 + area * 8;
+  if (bills.annualElecKwh !== undefined && (fuel === "electric" || fuel === "heatpump")) notes.push("Electric heating consumption is estimated within your total electricity usage; the split may be inaccurate.");
+  notes.push("Rates are held constant for the forecast. Installation costs are indicative, not quotes. Existing solar or insulation may reduce achievable savings.");
 
   const heatingSpend = r(heatEnergyCost + gasStanding);
   const electricitySpend = r(elecKwh * A.elecPerKwh + A.elecStandingPerYear);
@@ -193,7 +200,7 @@ export function calculate(prop: Property, role: Role, bills: Bills = {}): Result
   const baselineCost = heatEnergyCost + gasStanding + elecKwh * A.elecPerKwh + A.elecStandingPerYear;
 
   const canHeatPump = fuel !== "heatpump";
-  const bus = fuel === "gas" ? A.busAirToWater : fuel === "oil_lpg" ? A.busOilLpg : 0;
+  const bus = fuel === "gas" ? A.busAirToWater : fuel === "oil_lpg" || fuel === "electric" ? A.busAirToWater : 0;
   const eco4Possible = ["D", "E", "F", "G"].includes(rating);
 
   /* ---- run low / central / high ---- */
@@ -202,10 +209,10 @@ export function calculate(prop: Property, role: Role, bills: Bills = {}): Result
     const tariff = 0; // No tariff saving without actual comparison.
     const quick = heatEnergyCost * c.quickPct;
     const wallSaving = heatEnergyCost * wallPct;
-    const solar = solarValue(elecKwh, c.solarSelf, c.segRate);
+    const solar = solarValue(elecKwh, c.solarSelf, c.segRate, A.elecPerKwh);
     const hpElec = usefulHeat / c.scop;
     const hp = canHeatPump
-      ? heatEnergyCost - hpElec * A.elecPerKwh * (1 - c.hpDiscount) + (c.disconnectGas && fuel === "gas" ? gasStanding : 0)
+      ? heatEnergyCost - hpElec * A.elecPerKwh * (1 - 0) + (0)
       : 0;
 
     // everything together, with overlaps handled
@@ -218,7 +225,7 @@ export function calculate(prop: Property, role: Role, bills: Bills = {}): Result
     const self = Math.min(gen * (c.solarSelf + (canHeatPump ? 0.1 : 0)), elecTotal * 0.7);
     const imports = Math.max(0, elecTotal - self);
     const after =
-      heatCostAfter + (canHeatPump && c.disconnectGas ? 0 : gasStanding) +
+      heatCostAfter + (gasStanding) +
       imports * A.elecPerKwh + A.elecStandingPerYear - (gen - self) * c.segRate;
     return { tariff, quick, wallSaving, solar, hp, combined: baselineCost - after };
   };
@@ -262,7 +269,7 @@ export function calculate(prop: Property, role: Role, bills: Bills = {}): Result
       "Running costs depend on the heat pump's efficiency and your electricity price. At current prices many gas-heated homes save little on bills.",
       "Ask for a room-by-room heat loss calculation and check your radiators are suitable.",
     ];
-    if (fuel === "oil_lpg") hpNotes.push("The higher £9,000 grant for oil and LPG homes runs until 31 March 2027.");
+    if (fuel === "oil_lpg") hpNotes.push("A £9,000 grant may apply until 31 March 2027 only if there is no mains gas connection and other eligibility conditions are met.");
     if (fuel === "electric") hpNotes.push("Check Boiler Upgrade Scheme eligibility for electric heating with an installer.");
     upgrades.push(build(
       "Air Source Heat Pump (MCS-certified installation)", gross, bus, ce.hp, lo.hp, hi.hp, 18,
