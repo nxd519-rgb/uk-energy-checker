@@ -140,13 +140,13 @@ function build(
   name: string, gross: number, grant: number, central: number, low: number, high: number,
   years: number, co2: number, opts: { degradation?: number; extraCost?: number; notes?: string[] } = {},
 ): UpgradeOption {
-  const net = Math.max(0, gross - grant);
+  const net = gross; // Exclude unconfirmed grants from payback.
   const s = r(central);
   const deg = opts.degradation ?? 0;
   const sum = (n: number) => { let t = 0; for (let y = 0; y < n; y++) t += s * Math.pow(1 - deg, y); return t; };
   return {
     name, grossCost: gross, grant, netCost: net,
-    annualSaving: s, annualSavingLow: r(low), annualSavingHigh: r(high),
+    annualSaving: s, annualSavingLow: r(Math.min(low,central,high)), annualSavingHigh: r(Math.max(low,central,high)),
     paybackYears: net === 0 ? 0 : s > 0 ? Number((net / s).toFixed(1)) : null,
     tenYearNetProfit: r(sum(10) - net),
     lifespanYears: years,
@@ -199,7 +199,7 @@ export function calculate(prop: Property, role: Role, bills: Bills = {}): Result
   /* ---- run low / central / high ---- */
   const run = (c: CaseParams) => {
     const wallPct = wall === "cavity" ? c.cavityPct : wall === "solid" ? c.solidPct : 0;
-    const tariff = elecKwh * A.elecPerKwh * c.tariffPct;
+    const tariff = 0; // No tariff saving without actual comparison.
     const quick = heatEnergyCost * c.quickPct;
     const wallSaving = heatEnergyCost * wallPct;
     const solar = solarValue(elecKwh, c.solarSelf, c.segRate);
@@ -209,17 +209,17 @@ export function calculate(prop: Property, role: Role, bills: Bills = {}): Result
       : 0;
 
     // everything together, with overlaps handled
-    const reduction = Math.min(0.5, c.quickPct + wallPct);
+    const reduction = 1 - (1 - c.quickPct) * (1 - wallPct);
     const heatAfter = usefulHeat * (1 - reduction);
     const extraElec = canHeatPump ? heatAfter / c.scop : 0;
     const heatCostAfter = canHeatPump ? 0 : heatEnergyCost * (1 - reduction);
     const elecTotal = elecKwh + extraElec;
     const gen = A.solarKwp * A.solarKwhPerKwp;
     const self = Math.min(gen * (c.solarSelf + (canHeatPump ? 0.1 : 0)), elecTotal * 0.7);
-    const imports = Math.max(0, elecKwh + extraElec * (1 - c.hpDiscount) - self);
+    const imports = Math.max(0, elecTotal - self);
     const after =
       heatCostAfter + (canHeatPump && c.disconnectGas ? 0 : gasStanding) +
-      imports * A.elecPerKwh * (1 - c.tariffPct) + A.elecStandingPerYear - (gen - self) * c.segRate;
+      imports * A.elecPerKwh + A.elecStandingPerYear - (gen - self) * c.segRate;
     return { tariff, quick, wallSaving, solar, hp, combined: baselineCost - after };
   };
   const lo = run(CASES.low), ce = run(CASES.central), hi = run(CASES.high);
@@ -267,7 +267,7 @@ export function calculate(prop: Property, role: Role, bills: Bills = {}): Result
     upgrades.push(build(
       "Air Source Heat Pump (MCS-certified installation)", gross, bus, ce.hp, lo.hp, hi.hp, 18,
       (gasKwh * A.gasKgCo2PerKwh - (usefulHeat / CASES.central.scop) * A.gridKgCo2PerKwh) / 1000,
-      { notes: hpNotes },
+      { notes: [...hpNotes, "Payback and net cost exclude unconfirmed grants."] },
     ));
   }
 
@@ -284,7 +284,7 @@ export function calculate(prop: Property, role: Role, bills: Bills = {}): Result
     overpayment: r(ce.tariff + ce.quick),
     bus, gbis: 0, grantTotal: bus, eco4Possible,
     upgrades,
-    combined: { low: r(lo.combined), central: r(ce.combined), high: r(hi.combined) },
+    combined: { low: r(Math.min(lo.combined, ce.combined, hi.combined)), central: r(ce.combined), high: r(Math.max(lo.combined, ce.combined, hi.combined)) },
     usedFallbacks, notes,
   };
 }
