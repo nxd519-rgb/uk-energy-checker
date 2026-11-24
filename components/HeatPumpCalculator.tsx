@@ -20,20 +20,30 @@ export default function HeatPumpCalculator({
   const [installationCost, setInstallationCost] =
     useState(12000);
 
-  const [grant, setGrant] = useState(7500);
+  const [grant, setGrant] = useState(0);
+  const [gasUse, setGasUse] = useState(12000);
+  const [boilerEfficiency, setBoilerEfficiency] = useState(85);
+  const [scop, setScop] = useState(3.5);
+  const [gasRate, setGasRate] = useState(7.97);
+  const [electricRate, setElectricRate] = useState(26.32);
+  const [gasStanding, setGasStanding] = useState(29.68);
+  const [removeGas, setRemoveGas] = useState(false);
 
-  const [annualSaving, setAnnualSaving] =
-    useState(250);
+  const heatDemand = gasUse * boilerEfficiency / 100;
+  const gasCost = gasUse * gasRate / 100 + (removeGas ? gasStanding * 365 / 100 : 0);
+  const heatPumpCost = heatDemand / Math.max(1, scop) * electricRate / 100;
+  const annualSaving = gasCost - heatPumpCost;
+  const netCost = Math.max(0, installationCost - grant);
+  const payback = annualSaving > 0 ? netCost / annualSaving : null;
 
-  const netCost = Math.max(
-    0,
-    installationCost - grant
-  );
-
-  const payback =
-    annualSaving > 0
-      ? netCost / annualSaving
-      : null;
+  const inputs = [
+    { label: "Annual gas use for heating and hot water (kWh)", value: gasUse, setter: setGasUse, min: 0 },
+    { label: "Boiler efficiency (%)", value: boilerEfficiency, setter: setBoilerEfficiency, min: 1, max: 100 },
+    { label: "Seasonal heat pump efficiency (SCOP)", value: scop, setter: setScop, min: 1, max: 10 },
+    { label: "Gas unit rate (p/kWh)", value: gasRate, setter: setGasRate, min: 0 },
+    { label: "Electricity unit rate (p/kWh)", value: electricRate, setter: setElectricRate, min: 0 },
+    { label: "Gas standing charge (p/day)", value: gasStanding, setter: setGasStanding, min: 0 },
+  ];
 
   return (
     <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -80,21 +90,24 @@ export default function HeatPumpCalculator({
           />
         </label>
 
-        <label className="block text-sm font-medium text-slate-700">
-          Annual bill saving (£)
-          <input
-            type="number"
-            value={annualSaving}
-            onChange={(e) =>
-              setAnnualSaving(
-                Number(e.target.value) || 0
-              )
-            }
-            className="mt-2 w-full rounded-lg border border-slate-300 p-3"
-          />
+        {inputs.map(({ label, value, setter, min, max }) => (
+          <label key={label} className="block text-sm font-medium text-slate-700">
+            {label}
+            <input type="number" min={min} max={max} step="any" value={value}
+              onChange={(e) => setter(Math.min(max ?? Infinity, Math.max(min, Number(e.target.value) || 0)))}
+              className="mt-2 w-full rounded-lg border border-slate-300 p-3" />
+          </label>
+        ))}
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input type="checkbox" checked={removeGas} onChange={(e) => setRemoveGas(e.target.checked)} />
+          Gas supply removed entirely (avoid gas standing charge)
         </label>
       </div>
 
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-xl bg-slate-50 p-4">Annual gas boiler cost: <strong>{money(gasCost)}</strong></div>
+        <div className="rounded-xl bg-slate-50 p-4">Annual heat pump cost: <strong>{money(heatPumpCost)}</strong></div>
+      </div>
       <div className="mt-6 grid gap-3 md:grid-cols-3">
         <div className="rounded-xl bg-slate-50 p-4">
           <p className="text-sm text-slate-600">
@@ -107,10 +120,10 @@ export default function HeatPumpCalculator({
 
         <div className="rounded-xl bg-emerald-50 p-4">
           <p className="text-sm text-emerald-800">
-            Estimated annual saving
+            {annualSaving >= 0 ? "Estimated annual saving" : "Estimated extra annual cost"}
           </p>
           <p className="mt-2 text-2xl font-bold text-emerald-800">
-            {money(annualSaving)}
+            {money(Math.abs(annualSaving))}
           </p>
         </div>
 
@@ -129,7 +142,14 @@ export default function HeatPumpCalculator({
       <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
         <strong>Important:</strong> These are adjustable
         example assumptions, not a personalised quote.
-        Grants depend on eligibility. Actual running
+        Enter your actual tariff rates. Default rates are illustrative, not live prices.
+        Enter only gas used for heating and hot water, excluding cooking.
+        Heat demand is gas use multiplied by boiler efficiency; heat pump electricity use is heat demand divided by SCOP.
+        Grants depend on eligibility. Check the{" "}
+        <a className="underline" href="https://www.gov.uk/apply-boiler-upgrade-scheme">Boiler Upgrade Scheme</a>
+        {" "}and{" "}
+        <a className="underline" href="https://www.ofgem.gov.uk/energy-price-cap">Ofgem energy price cap</a>.
+        Payback uses the full net installation cost, not the incremental cost versus replacing a boiler. Actual running
         costs depend on your existing heating system,
         property heat demand, energy tariffs and heat
         pump efficiency. This simple payback calculation
