@@ -45,21 +45,21 @@ const tools = [
 ];
 
 const quoteProviders = {
-  home: [{name:"TrustMark",url:"https://www.trustmark.org.uk/",price:"Request a quote",scope:"Find registered home improvement installers"}],
-  heat: [{name:"British Gas",url:"https://www.britishgas.co.uk/heating/air-source-heat-pumps.html",price:"Online estimate",scope:"Final quote after technical survey"},{name:"BOXT",url:"https://www.boxt.co.uk/",price:"Request a quote",scope:"Advertised heat pump installation; check grant assumptions and scope"},{name:"Universal Energy",url:"https://universal-energy.co.uk/",price:"Request a quote",scope:"Check postcode coverage and grant treatment"}],
-  ev: [{name:"BOXT",url:"https://www.boxt.co.uk/",price:"Request a quote",scope:"EV charger installation"},{name:"Universal Energy",url:"https://universal-energy.co.uk/",price:"Request a quote",scope:"EV charger installation; check postcode coverage"},{name:"ECONEXIS",url:"https://econexis.co.uk/pricing",price:"Request a quote",scope:"7 kW charger, standard installation; check coverage"}],
-  solar: [{name:"Octopus Energy",url:"https://octopus.energy/order/solar/",price:"Request a quote",scope:"Solar installation; confirm panel count and battery options"},{name:"ECONEXIS",url:"https://econexis.co.uk/pricing",price:"Request a quote",scope:"4.7 kWp, 10 panels, no battery; check coverage"},{name:"Newpower",url:"https://www.newpoweruk.co.uk/",price:"Request a quote",scope:"Solar plus battery; check specification and coverage"}]
+home:[{name:"TrustMark",url:"https://www.trustmark.org.uk/homeowner/find-a-tradesperson?open-filters=true",price:"Find an installer",scope:"Insulation, draught proofing and heating controls"},{name:"Citizens Advice",url:"https://www.citizensadvice.org.uk/consumer/energy/energy-supply/save-energy-at-home/find-an-installer-for-energy-efficiency-home-improvements/",price:"Installer guidance",scope:"Find qualified renewable and insulation installers"}],
+heat:[{name:"GOV.UK",url:"https://www.gov.uk/guidance/find-a-heat-pump-installer",price:"Find an installer",scope:"Find qualified heat pump installers and request written quotes"},{name:"BOXT",url:"https://www.boxt.co.uk/",price:"Request a quote",scope:"Select heat pumps to begin a quote"}],
+ev:[{name:"Octopus Energy",url:"https://checkout.octopus.energy/",price:"Get installation price",scope:"Enter postcode for EV charger installation prices"},{name:"BOXT",url:"https://www.boxt.co.uk/",price:"Request a quote",scope:"Select EV chargers"}],
+solar:[{name:"Octopus Energy",url:"https://octopus.energy/order/solar/",price:"Request a quote",scope:"Solar and battery installation"},{name:"BOXT",url:"https://www.boxt.co.uk/solar",price:"Request a quote",scope:"Solar panels and battery options"}]
 };
 function InstallationQuotes({sector}:{sector:keyof typeof quoteProviders}) {
- return <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-8">
+ return <section id={sector+"-quotes"} className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-8">
  <h3 className="text-xl font-bold">Find installation quotes</h3>
  <p className="mt-2 text-sm text-slate-600">Request current prices directly from providers. We do not receive live quotes or rank providers by price. Packages are not necessarily comparable. Confirm equipment, installation scope, grants, VAT and availability directly with each provider.</p>
- <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{quoteProviders[sector].map(p=><article key={p.name} className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4"><h4 className="font-bold">{p.name}</h4><p className="mt-2 text-2xl font-extrabold text-blue-900">{p.price}</p><p className="mt-2 text-sm text-slate-600">{p.scope}</p><a href={p.url} target="_blank" rel="noopener noreferrer" className="mt-auto pt-4 font-semibold text-blue-800 underline">Get current quote ↗</a></article>)}</div>
+ <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{quoteProviders[sector].map(p=><article key={p.name} className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4"><h4 className="font-bold">{p.name}</h4><p className="mt-2 text-2xl font-extrabold text-blue-900">{p.price}</p><p className="mt-2 text-sm text-slate-600">{p.scope}</p><a href={p.url} target="_blank" rel="noopener noreferrer" className="mt-auto pt-4 font-semibold text-blue-800 underline">{p.price} ↗</a></article>)}</div>
  <p className="mt-4 text-sm"><a href="#methodology" className="underline">Sources and limitations</a> · <a href="#tools" className="underline">Back to calculators</a></p><p className="mt-4 text-xs text-slate-400">These are selected providers, not a whole-market comparison or endorsement. No customer information is sent automatically. Check installer credentials and obtain written quotes before committing.</p></section>;
 }
 
 export default function Page() {
-  const affiliateLink = process.env.AFFILIATE_LINK || "";
+  const affiliateLink = "";
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
