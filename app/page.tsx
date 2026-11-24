@@ -46,16 +46,16 @@ const tools = [
 
 const quoteProviders = {
   home: [{name:"TrustMark",url:"https://www.trustmark.org.uk/",price:"Request a quote",scope:"Find registered home improvement installers"}],
-  heat: [{name:"British Gas",url:"https://www.britishgas.co.uk/heating/air-source-heat-pumps.html",price:"Online estimate",scope:"Final quote after technical survey"},{name:"BOXT",url:"https://www.boxt.co.uk/",price:"From £4,799",scope:"Advertised heat pump installation; check grant assumptions and scope"},{name:"Universal Energy",url:"https://universal-energy.co.uk/",price:"From £7,000",scope:"Check postcode coverage and grant treatment"}],
-  ev: [{name:"BOXT",url:"https://www.boxt.co.uk/",price:"From £909",scope:"EV charger installation"},{name:"Universal Energy",url:"https://universal-energy.co.uk/",price:"From £990",scope:"EV charger installation; check postcode coverage"},{name:"ECONEXIS",url:"https://econexis.co.uk/pricing",price:"From £1,150",scope:"7 kW charger, standard installation; check coverage"}],
-  solar: [{name:"Octopus Energy",url:"https://octopus.energy/order/solar/",price:"From £6,663",scope:"2 panels, no battery; April 2026 price"},{name:"ECONEXIS",url:"https://econexis.co.uk/pricing",price:"From £4,990",scope:"4.7 kWp, 10 panels, no battery; check coverage"},{name:"Newpower",url:"https://www.newpoweruk.co.uk/",price:"From £6,995",scope:"Solar plus battery; check specification and coverage"}]
+  heat: [{name:"British Gas",url:"https://www.britishgas.co.uk/heating/air-source-heat-pumps.html",price:"Online estimate",scope:"Final quote after technical survey"},{name:"BOXT",url:"https://www.boxt.co.uk/",price:"Request a quote",scope:"Advertised heat pump installation; check grant assumptions and scope"},{name:"Universal Energy",url:"https://universal-energy.co.uk/",price:"Request a quote",scope:"Check postcode coverage and grant treatment"}],
+  ev: [{name:"BOXT",url:"https://www.boxt.co.uk/",price:"Request a quote",scope:"EV charger installation"},{name:"Universal Energy",url:"https://universal-energy.co.uk/",price:"Request a quote",scope:"EV charger installation; check postcode coverage"},{name:"ECONEXIS",url:"https://econexis.co.uk/pricing",price:"Request a quote",scope:"7 kW charger, standard installation; check coverage"}],
+  solar: [{name:"Octopus Energy",url:"https://octopus.energy/order/solar/",price:"Request a quote",scope:"Solar installation; confirm panel count and battery options"},{name:"ECONEXIS",url:"https://econexis.co.uk/pricing",price:"Request a quote",scope:"4.7 kWp, 10 panels, no battery; check coverage"},{name:"Newpower",url:"https://www.newpoweruk.co.uk/",price:"Request a quote",scope:"Solar plus battery; check specification and coverage"}]
 };
 function InstallationQuotes({sector}:{sector:keyof typeof quoteProviders}) {
  return <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-8">
- <h3 className="text-xl font-bold">Compare installation prices</h3>
- <p className="mt-2 text-sm text-slate-600">Published starting prices checked 24 November 2026, not live personalised quotes. Packages are not necessarily comparable. Confirm equipment, installation scope, grants, VAT and availability directly with each provider.</p>
+ <h3 className="text-xl font-bold">Find installation quotes</h3>
+ <p className="mt-2 text-sm text-slate-600">Request current prices directly from providers. We do not receive live quotes or rank providers by price. Packages are not necessarily comparable. Confirm equipment, installation scope, grants, VAT and availability directly with each provider.</p>
  <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{quoteProviders[sector].map(p=><article key={p.name} className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4"><h4 className="font-bold">{p.name}</h4><p className="mt-2 text-2xl font-extrabold text-blue-900">{p.price}</p><p className="mt-2 text-sm text-slate-600">{p.scope}</p><a href={p.url} target="_blank" rel="noopener noreferrer" className="mt-auto pt-4 font-semibold text-blue-800 underline">Get current quote ↗</a></article>)}</div>
- <p className="mt-4 text-xs text-slate-500">These are selected providers, not a whole-market comparison or endorsement. No customer information is sent automatically. Prices may change.</p></section>;
+ <p className="mt-4 text-sm"><a href="#methodology" className="underline">Sources and limitations</a> · <a href="#tools" className="underline">Back to calculators</a></p><p className="mt-4 text-xs text-slate-400">These are selected providers, not a whole-market comparison or endorsement. No customer information is sent automatically. Check installer credentials and obtain written quotes before committing.</p></section>;
 }
 
 export default function Page() {
@@ -101,7 +101,7 @@ export default function Page() {
           </div>
 
           <p className="mt-6 text-sm text-slate-200">
-            No account required · Adjustable calculations · UK-focused
+            Free to use · No account required · Estimates, not guarantees
           </p>
         </div>
       </section>
@@ -218,7 +218,7 @@ export default function Page() {
 
       <section
         id="solar-ev"
-        className="scroll-mt-6 bg-slate-50 py-10"
+        className="scroll-mt-6 border-t border-amber-100 bg-gradient-to-br from-amber-50 to-white py-14"
       >
         <div className="mx-auto max-w-4xl px-4">
           <h2 className="text-3xl font-bold">
@@ -261,13 +261,14 @@ export default function Page() {
         </div>
       </section>
 
+      <section id="methodology" className="mx-auto max-w-4xl px-4 py-10"><h2 className="text-2xl font-bold">Sources and limitations</h2><p className="mt-3 text-sm leading-6 text-slate-600">EPC-based estimates cover England and Wales and use simplified assumptions, not a property survey. Default tariff and installation assumptions may differ from your actual costs. Savings across calculators can overlap and should not be added together. Grants are conditional, not confirmed awards.</p><div className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-blue-800"><a className="underline" href="https://www.ofgem.gov.uk/energy-price-cap">Ofgem price cap</a><a className="underline" href="https://www.gov.uk/find-energy-certificate">Official EPC register</a><a className="underline" href="https://www.gov.uk/apply-boiler-upgrade-scheme">Boiler Upgrade Scheme</a><a className="underline" href="https://mcscertified.com/">MCS installer information</a></div></section>
       <footer className="bg-slate-950 px-4 py-8 text-center text-sm text-slate-300">
         <p className="font-semibold text-white">
           UK Energy Checker
         </p>
 
         <p className="mt-2">
-          Independent energy cost estimates and comparison tools.
+          Energy cost estimates and selected installer links.
         </p>
 
         <p className="mt-3 text-xs text-slate-400">
