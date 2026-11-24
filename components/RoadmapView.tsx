@@ -82,7 +82,7 @@ export default function RoadmapView({
         </span>
       </div>
 
-      <div className="mt-5 rounded-2xl bg-slate-900 p-6 text-white"><p className="text-sm text-slate-300">Estimated annual savings from combined home upgrades</p><p className="mt-2 text-4xl font-extrabold">{gbp(r10(result.combined.central))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-slate-300">Estimated range: {rangeText(result.combined.low,result.combined.high)} per year · before installation costs</p></div>
+      <div className="mt-5 rounded-2xl bg-gradient-to-br from-slate-950 via-teal-900 to-teal-700 p-6 text-white shadow-lg"><p className="text-sm text-teal-100">Estimated annual savings from combined home upgrades</p><p className="mt-2 text-4xl font-extrabold">{gbp(r10(result.combined.central))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-teal-100">Estimated range: {rangeText(result.combined.low,result.combined.high)} per year · before installation costs</p></div>
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
         <div className="rounded-xl bg-slate-50 p-4">
           <p className="text-xs uppercase text-slate-500">Current EPC</p>
