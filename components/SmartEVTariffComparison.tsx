@@ -5,7 +5,7 @@ const Field = ({label,value,set,unit}: {label:string;value:number;set:(v:number)
 export default function SmartEVTariffComparison(){
  const [miles,setMiles]=useState(10000),[eff,setEff]=useState(3.5),[house,setHouse]=useState(2700),[homeNight,setHomeNight]=useState(15),[evNight,setEvNight]=useState(90),[loss,setLoss]=useState(10);
  const [standard,setStandard]=useState(26.32),[standardStanding,setStandardStanding]=useState(54.83),[day,setDay]=useState(29),[night,setNight]=useState(7),[evStanding,setEvStanding]=useState(50);
- const [homeShare,setHomeShare]=useState(100);
+ const [homeShare,setHomeShare]=useState(100); const [install,setInstall]=useState(0);
  const chargeKwh=miles*homeShare/100/Math.max(eff,0.1)/(1-Math.min(loss,50)/100);
  const standardAnnual=(house+chargeKwh)*standard/100+365*standardStanding/100;
  const nightKwh=house*homeNight/100+chargeKwh*evNight/100;
@@ -27,7 +27,7 @@ export default function SmartEVTariffComparison(){
    <div className="rounded-xl bg-blue-50 p-4"><p className="text-xs text-blue-800">EV tariff annual bill</p><p className="text-2xl font-bold">{money(evAnnual)}</p></div>
    <div className="rounded-xl bg-slate-100 p-4"><p className="text-xs text-slate-900">{saving>=0?"Estimated annual saving":"Estimated additional cost"}</p><p className="text-2xl font-bold text-slate-900">{money(Math.abs(saving))}</p></div>
   </div>
-  <p className="mt-3 text-sm text-slate-700">Estimated electricity bought for EV charging: <strong>{Math.round(chargeKwh).toLocaleString("en-GB")} kWh/year</strong>. {saving>=0?"The EV tariff is cheaper under these assumptions.":"The standard tariff is cheaper under these assumptions."}</p>
+  <div className="mt-4"><Field label="Additional upfront charger or switching cost (enter quote; zero if none)" value={install} set={setInstall} unit="£"/></div><div className="mt-3 grid gap-3 sm:grid-cols-3">{[["Upfront cost",install],["5-year tariff savings",saving*5],["5-year net after cost",saving*5-install]].map(([label,value])=><div key={String(label)} className="rounded-xl bg-slate-100 p-4"><p className="text-sm">{label}</p><strong className="text-xl">{money(Number(value))}</strong></div>)}</div><a href="https://checkout.octopus.energy/" target="_blank" rel="noopener noreferrer" className="mt-4 block rounded-xl bg-blue-800 p-3 text-center text-white font-bold">Get EV charger installation prices ↗</a><p className="mt-3 text-sm text-slate-700">Estimated electricity bought for EV charging: <strong>{Math.round(chargeKwh).toLocaleString("en-GB")} kWh/year</strong>. {saving>=0?"The EV tariff is cheaper under these assumptions.":"The standard tariff is cheaper under these assumptions."}</p>
   <p className="mt-2 text-xs text-slate-500">Example rates are illustrative, not live prices. Excludes public charging costs, assumed unchanged between tariffs. Assumes the stated share of home consumption fits the tariff's actual off-peak window. Some tariffs have eligibility, charger and vehicle restrictions; check supplier terms. Charging losses are capped at 50% for calculation safety.</p>
  </section>;
 }
