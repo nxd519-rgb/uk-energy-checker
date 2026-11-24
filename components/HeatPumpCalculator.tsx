@@ -144,7 +144,7 @@ export default function HeatPumpCalculator({
         </div>
       </div>
 
-      <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2"><div className="rounded-xl bg-slate-100 p-4">5-year running-cost savings <strong className="block text-2xl">{money(annualSaving*5)}</strong></div><div className="rounded-xl bg-slate-100 p-4">5-year net after installation and entered grant <strong className="block text-2xl">{money(annualSaving*5-netCost)}</strong></div></div><a href="https://www.gov.uk/guidance/find-a-heat-pump-installer" target="_blank" rel="noopener noreferrer" className="mt-4 block rounded-xl bg-blue-800 p-3 text-center font-bold text-white">Find heat pump installers ↗</a><div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
         <strong>Important:</strong> These are adjustable
         example assumptions, not a personalised quote.
         Enter your actual tariff rates. Default rates are Ofgem GB averages for Oct–Dec 2026, not live prices.
