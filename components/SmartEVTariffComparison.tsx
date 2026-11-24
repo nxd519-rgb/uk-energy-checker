@@ -11,10 +11,10 @@ export default function SmartEVTariffComparison(){
  const dayKwh=house+chargeKwh-nightKwh;
  const evAnnual=nightKwh*night/100+dayKwh*day/100+365*evStanding/100;
  const saving=standardAnnual-evAnnual;
- return <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+ return <section className="mt-5 rounded-2xl border border-blue-100 bg-white p-5 shadow-lg sm:p-8">
   <h3 className="text-xl font-bold text-slate-900">Whole-household EV tariff comparison</h3>
   <p className="mt-2 text-sm text-slate-600">Compare the entire electricity bill, including daytime household use, overnight charging and standing charges. Enter the actual rates from your tariff offers.</p>
-  <div className="mt-5 rounded-2xl bg-slate-900 p-6 text-white" aria-live="polite"><p className="text-sm text-slate-300">{saving>=0?"Estimated annual electricity saving":"Estimated extra annual electricity cost"}</p><p className="mt-2 text-5xl font-extrabold tracking-tight">{money(Math.abs(saving))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-slate-300">{money(Math.abs(saving)/12)} per month · whole household including EV</p></div>
+  <div className="mt-5 rounded-2xl bg-gradient-to-br from-blue-950 via-blue-800 to-indigo-700 p-6 text-white shadow-lg" aria-live="polite"><p className="text-sm text-blue-100">{saving>=0?"Estimated annual electricity saving":"Estimated extra annual electricity cost"}</p><p className="mt-2 text-5xl font-extrabold tracking-tight">{money(Math.abs(saving))}<span className="text-lg font-normal"> / year</span></p><p className="mt-2 text-blue-100">{money(Math.abs(saving)/12)} per month · whole household including EV</p></div>
   <div className="mt-5 grid gap-4 sm:grid-cols-2">
    <Field label="Annual EV mileage" value={miles} set={setMiles} unit="miles"/><Field label="Other household electricity" value={house} set={setHouse} unit="kWh/year"/>
    <Field label="Standard unit rate" value={standard} set={setStandard} unit="p/kWh"/><Field label="EV tariff daytime rate" value={day} set={setDay} unit="p/kWh"/>
