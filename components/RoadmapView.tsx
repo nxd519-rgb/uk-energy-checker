@@ -101,7 +101,7 @@ export default function RoadmapView({
             ~{gbp(r10(result.overpayment))}/yr
           </p>
           <p className="mt-1 text-[10px] text-amber-800">
-            Tariff + quick wins
+            Quick wins only
           </p>
         </div>
 
@@ -220,8 +220,8 @@ export default function RoadmapView({
               </div>
 
               <p className="mt-1 text-slate-600">
-                Est. cost: {gbp(u.grossCost)} | Grant: {gbp(u.grant)} |{" "}
-                <strong>Net cost: {gbp(u.netCost)}</strong> | Payback:{" "}
+                Est. cost: {gbp(u.grossCost)} | Potential grant: {gbp(u.grant)} |{" "}
+                <strong>Cost before grant: {gbp(u.netCost)}</strong> | Payback:{" "}
                 <strong>{paybackText(u)}</strong>
               </p>
 
@@ -271,8 +271,7 @@ export default function RoadmapView({
               Prices: {A.priceSource}: electricity{" "}
               {(A.elecPerKwh * 100).toFixed(2)}p/kWh, gas{" "}
               {(A.gasPerKwh * 100).toFixed(2)}p/kWh, plus standing charges.
-              Energy use is estimated from your EPC band and floor area, not
-              your real bills. Heat pump efficiency {A.heatPumpScop}. Solar:{" "}
+              Energy use is estimated from EPC band and floor area unless applicable actual usage is entered. Paybacks exclude unconfirmed grants. Heat pump efficiency {A.heatPumpScop}. Solar:{" "}
               {A.solarKwp}kWp, about {A.solarKwhPerKwp} kWh per kWp a year.
               Prices change every quarter, and grant rules and installer costs
               vary, so get several quotes and check GOV.UK before deciding.
