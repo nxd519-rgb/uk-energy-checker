@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculate} from '../lib/calc.ts';
+const property={totalFloorArea:85,currentEnergyRating:'D',mainheatDescription:'Mains gas boiler',wallsDescription:'Cavity wall, as built, no insulation'};
+const bills={annualGasKwh:12000,annualElecKwh:2700,gasRate:8,elecRate:25,gasStanding:30,elecStanding:50};
+test('actual bills and standing charges',()=>{const x=calculate(property,'homeowner',bills);assert.equal(x.heatingSpend,1070);assert.equal(x.electricitySpend,858);assert.equal(x.totalSpend,1928)});
+test('heat pump running costs and unconfirmed grant',()=>{const x=calculate(property,'homeowner',bills).upgrades.find(u=>u.name.startsWith('Air Source'));assert.ok(x);assert.equal(x.annualSaving,90);assert.equal(x.netCost,x.grossCost);assert.equal(x.paybackYears,Number((x.grossCost/90).toFixed(1)))});
+test('expensive electricity can produce negative heat pump savings',()=>{const x=calculate(property,'homeowner',{...bills,elecRate:50}).upgrades.find(u=>u.name.startsWith('Air Source'));assert.ok(x.annualSaving<0);assert.equal(x.paybackYears,null)});
+test('scenario bounds and finite values across fuels and ratings',()=>{for(const mainheatDescription of ['Mains gas','Electric heating','Heat pump','Oil boiler','District heating',''])for(const currentEnergyRating of ['A','D','G','']){const x=calculate({...property,mainheatDescription,currentEnergyRating},'homeowner',bills);assert.ok(Number.isFinite(x.totalSpend));assert.ok(x.combined.low<=x.combined.central&&x.combined.central<=x.combined.high);for(const u of x.upgrades){assert.ok(Number.isFinite(u.annualSaving));assert.ok(u.annualSavingLow<=u.annualSaving&&u.annualSaving<=u.annualSavingHigh)}}});
+test('no speculative tariff saving',()=>{const x=calculate(property,'homeowner',bills);assert.equal(x.upgrades.find(u=>u.name.startsWith('Time-of-Use')).annualSaving,0)});
+test('zero unit prices and standing charges',()=>{const x=calculate(property,'homeowner',{...bills,gasRate:0,elecRate:0,gasStanding:0,elecStanding:0});assert.equal(x.totalSpend,0)});
