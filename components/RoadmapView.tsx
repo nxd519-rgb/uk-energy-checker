@@ -218,7 +218,7 @@ export default function RoadmapView({
                 </span>
               </div>
 
-              <p className="mt-1 text-slate-600">
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{[["Upfront cost",u.grossCost],["Annual savings",u.annualSaving],["5-year savings",u.annualSaving*5],["5-year net after cost",u.annualSaving*5-u.grossCost]].map(([label,value])=><div key={String(label)} className="rounded-lg bg-white p-3"><p className="text-xs text-slate-600">{label}</p><strong className="text-lg">{gbp(Number(value))}</strong></div>)}</div><a className="mt-3 inline-block font-semibold text-blue-800 underline" href={/heat pump/i.test(u.name)?"https://www.gov.uk/guidance/find-a-heat-pump-installer":/solar/i.test(u.name)?"https://octopus.energy/order/solar/":"https://www.trustmark.org.uk/homeowner/find-a-tradesperson?open-filters=true"} target="_blank" rel="noopener noreferrer">Find installers for this improvement ↗</a><p className="mt-1 text-xs text-slate-500">Five-year projections assume unchanged prices and exclude unconfirmed grants, finance and maintenance.</p><p className="mt-1 text-slate-600">
                 Est. cost: {gbp(u.grossCost)} | Potential grant: {gbp(u.grant)} |{" "}
                 <strong>Cost before grant: {gbp(u.netCost)}</strong> | Payback:{" "}
                 <strong>{paybackText(u)}</strong>
@@ -320,17 +320,16 @@ export default function RoadmapView({
         )}
 
         <a
-          href={affiliateLink}
+          href="#home-quotes"
           target="_blank"
           rel="sponsored noopener noreferrer"
           className="block w-full rounded-lg border border-slate-300 px-4 py-3 text-center font-semibold text-slate-800 hover:bg-slate-50"
         >
-          Compare Fixed Heat Pump &amp; Solar Quotes
+          Find installation quotes
         </a>
 
         <p className="text-[11px] text-slate-500">
-          We may earn a commission if you request quotes through this link. It
-          doesn&apos;t cost you more.
+          Compare written quotes from qualified installers.
         </p>
       </div>
 
