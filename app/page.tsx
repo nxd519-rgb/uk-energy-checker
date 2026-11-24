@@ -1,4 +1,4 @@
-import EVSavingsCalculator from "@/components/EVSavingsCalculator";import Calculator from "@/components/Calculator";
+import Calculator from "@/components/Calculator";
 import HeatPumpCalculator from "@/components/HeatPumpCalculator";
 import SmartEVTariffComparison from "@/components/SmartEVTariffComparison";
 import SolarEVCalculator from "@/components/SolarEVCalculator";
@@ -52,16 +52,10 @@ export default function Page() {
             Checker
           </a>
 
-          <a
-            href="#tools"
-            className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
-          >
-            Explore calculators
-          </a>
         </div>
       </header>
 
-      <section className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-800 px-4 py-16 text-white">
+      <section className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-800 px-4 py-12 text-white">
         <div className="mx-auto max-w-5xl text-center">
           <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-emerald-200">
             Free UK household energy tools
@@ -85,12 +79,7 @@ export default function Page() {
               Explore free calculators
             </a>
 
-            <a
-              href="#epc"
-              className="rounded-xl border border-white/50 px-6 py-3 font-bold text-white hover:bg-white/10"
-            >
-              Check my EPC
-            </a>
+
           </div>
 
           <p className="mt-6 text-sm text-emerald-100">
@@ -101,7 +90,7 @@ export default function Page() {
 
       <section
         id="tools"
-        className="mx-auto max-w-6xl scroll-mt-8 px-4 py-14"
+        className="mx-auto max-w-6xl scroll-mt-8 px-4 py-10"
       >
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-bold">
@@ -113,7 +102,7 @@ export default function Page() {
           </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {tools.map((tool) => (
             <a
               key={tool.number}
@@ -136,14 +125,14 @@ export default function Page() {
               </p>
 
               <p className="mt-5 text-sm font-bold text-emerald-700">
-                Open calculator →
+                See my savings →
               </p>
             </a>
           ))}
         </div>
       </section>
 
-      <section id="epc" className="scroll-mt-6 bg-white py-14">
+      <section id="epc" className="scroll-mt-6 bg-white py-10">
         <div className="mx-auto max-w-4xl px-4">
           <div className="mb-8">
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
@@ -170,7 +159,7 @@ export default function Page() {
 
       <section
         id="heat-pumps"
-        className="scroll-mt-6 bg-slate-50 py-14"
+        className="scroll-mt-6 bg-slate-50 py-10"
       >
         <div className="mx-auto max-w-4xl px-4">
           <h2 className="text-3xl font-bold">
@@ -189,7 +178,7 @@ export default function Page() {
 
       <section
         id="ev-tariffs"
-        className="scroll-mt-6 bg-white py-14"
+        className="scroll-mt-6 bg-white py-10"
       >
         <div className="mx-auto max-w-4xl px-4">
           <h2 className="text-3xl font-bold">
@@ -208,7 +197,7 @@ export default function Page() {
 
       <section
         id="solar-ev"
-        className="scroll-mt-6 bg-slate-50 py-14"
+        className="scroll-mt-6 bg-slate-50 py-10"
       >
         <div className="mx-auto max-w-4xl px-4">
           <h2 className="text-3xl font-bold">
@@ -226,7 +215,7 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="bg-emerald-950 px-4 py-14 text-white">
+      <section className="bg-emerald-950 px-4 py-10 text-white">
         <div className="mx-auto max-w-4xl">
           <h2 className="text-2xl font-bold">
             How reliable are these estimates?
@@ -269,7 +258,7 @@ export default function Page() {
           © {new Date().getFullYear()} UK Energy Checker
         </p>
       </footer> 
-      <EVSavingsCalculator />
+
     </main>
   );
 }
